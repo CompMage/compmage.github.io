@@ -35,7 +35,9 @@ jobs:
         run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
 
       - name: Build application
-        run: npm run build
+        run: |
+          npm run build
+          touch ./dist/.nojekyll
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
