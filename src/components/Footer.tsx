@@ -1,18 +1,18 @@
 import React from 'react';
-import { Beer, Heart, ExternalLink, Mail, MapPin, Calendar, Shield, Download } from 'lucide-react';
+import { Heart, ExternalLink, Mail, MapPin, Calendar, Shield } from 'lucide-react';
 
 interface FooterProps {
-  onNavClick: (id: string) => void;
+  onNavClick?: (id: string) => void;
   onOpenOfficerModal: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavClick, onOpenOfficerModal }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenOfficerModal }) => {
   return (
     <footer className="bg-slate-950 text-white border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
         
         {/* Top Tier: Brand, Heavy Seas Host Thanks, and Guild Link */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-12 border-b border-slate-800/80">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-12 border-b border-slate-800">
           
           {/* Col 1: Club Identity */}
           <div className="lg:col-span-4 space-y-4">
@@ -26,48 +26,55 @@ export const Footer: React.FC<FooterProps> = ({ onNavClick, onOpenOfficerModal }
                 <span className="text-xl font-black tracking-tight text-white block">
                   C.R.A.B.S.
                 </span>
-                <span className="text-xs text-slate-400 font-medium tracking-wide uppercase block">
+                <span className="text-xs text-slate-300 font-semibold tracking-wide uppercase block">
                   Chesapeake Real Ale Brewers Society
                 </span>
               </div>
             </div>
 
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-sm">
+            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-sm">
               C.R.A.B.S. is a homebrewing club that has been meeting regularly since 1981. We brew (and sample) anything from hop drenched pale ales, face puckering sours to the most delicate meads. Our friendly competitions get you feedback on your creations. Meet us at our next meeting and bring your homebrew or favorite commercial brew inspirations.
             </p>
 
-            <div className="pt-2 flex flex-col gap-1.5 text-xs text-slate-400">
+            <div className="pt-2 flex flex-col gap-2 text-xs sm:text-sm text-slate-200">
               <span className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-red-500" />
-                Heavy Seas Brewery (Purple Room) · Halethorpe, MD
+                <MapPin className="w-4 h-4 text-red-400 shrink-0" />
+                <span>Heavy Seas Brewery (Purple Room) · Halethorpe, MD</span>
               </span>
               <span className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-amber-500" />
-                3rd Wednesday Monthly @ 7:00 PM
+                <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
+                <span>3rd Wednesday Monthly @ 7:00 PM</span>
               </span>
+              <a
+                href="mailto:crabsbrew@googlegroups.com"
+                className="flex items-center gap-1.5 text-slate-200 hover:text-white transition-colors"
+              >
+                <Mail className="w-4 h-4 text-red-400 shrink-0" />
+                <span className="underline-offset-2 hover:underline">crabsbrew@googlegroups.com</span>
+              </a>
             </div>
           </div>
 
-          {/* Col 2: Heavy Seas Thanks (Explicit Requirement) */}
-          <div className="lg:col-span-4 bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-3">
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
-              <Heart className="w-3.5 h-3.5 fill-amber-400" />
+          {/* Col 2: Heavy Seas Thanks */}
+          <div className="lg:col-span-4 bg-slate-900/90 border border-slate-700/80 rounded-xl p-5 space-y-3 shadow-xs">
+            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-300">
+              <Heart className="w-3.5 h-3.5 fill-amber-300" />
               <span>Special Thanks to Our Host</span>
             </div>
             <h4 className="text-base font-bold text-white">
               Heavy Seas Brewery (Purple Room)
             </h4>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Warmest thanks to Hugh Sisson and the entire crew at <strong>Heavy Seas Brewery</strong> for hosting our monthly meetings in the <strong>Purple Room</strong>. (Go to the back of the taproom past the bathrooms or ask the bartender).
+            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              Warmest thanks to Hugh Sisson and the entire crew at <strong className="text-white font-semibold">Heavy Seas Brewery</strong> for hosting our monthly meetings in the <strong className="text-white font-semibold">Purple Room</strong>. (Go to the back of the taproom past the bathrooms or ask the bartender).
             </p>
-            <div className="pt-1 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="pt-1 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
               <a
                 href="https://www.google.com/maps/search/?api=1&query=Heavy+Seas+Beer+4615+Hollins+Ferry+Rd+Halethorpe+MD+21227"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-red-400 hover:text-red-300 font-semibold"
+                className="inline-flex items-center gap-1 text-red-300 hover:text-red-200 font-semibold"
               >
-                <MapPin className="w-3 h-3" />
+                <MapPin className="w-3.5 h-3.5" />
                 <span>Google Maps Directions</span>
                 <ExternalLink className="w-3 h-3" />
               </a>
@@ -76,7 +83,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavClick, onOpenOfficerModal }
                 href="https://www.heavyseasbeer.com"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 font-bold text-amber-400 hover:text-amber-300 transition-colors"
+                className="inline-flex items-center gap-1 font-bold text-amber-300 hover:text-amber-200 transition-colors"
               >
                 <span>heavyseasbeer.com</span>
                 <ExternalLink className="w-3 h-3" />
@@ -84,23 +91,23 @@ export const Footer: React.FC<FooterProps> = ({ onNavClick, onOpenOfficerModal }
             </div>
           </div>
 
-          {/* Col 3: Maryland Homebrewers Guild (Explicit Requirement) */}
-          <div className="lg:col-span-4 bg-slate-900/90 border border-slate-800 rounded-xl p-5 space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-red-500 block">
+          {/* Col 3: Maryland Homebrewers Guild */}
+          <div className="lg:col-span-4 bg-slate-900/90 border border-slate-700/80 rounded-xl p-5 space-y-3 shadow-xs">
+            <span className="text-xs font-bold uppercase tracking-wider text-red-400 block">
               Affiliation
             </span>
             <h4 className="text-base font-bold text-white">
               The Maryland Homebrewers Guild
             </h4>
-            <p className="text-xs text-slate-300 leading-relaxed">
-              C.R.A.B.S. is an active member club of <strong>The Free State Homebrew Club Guild</strong> (Maryland Homebrewers Guild), connecting homebrewers across Maryland through state-wide competitions and shared craft knowledge.
+            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+              C.R.A.B.S. is an active member club of <strong className="text-white font-semibold">The Free State Homebrew Club Guild</strong> (Maryland Homebrewers Guild), connecting homebrewers across Maryland through state-wide competitions and shared craft knowledge.
             </p>
             <div className="pt-1">
               <a
                 href="https://mdhomebrewers.com"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-bold text-red-400 hover:text-red-300 transition-colors"
+                className="inline-flex items-center gap-1 text-xs sm:text-sm font-bold text-red-300 hover:text-red-200 transition-colors"
               >
                 <span>Visit Maryland Homebrewers Guild</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -109,42 +116,20 @@ export const Footer: React.FC<FooterProps> = ({ onNavClick, onOpenOfficerModal }
           </div>
         </div>
 
-
-        {/* Bottom Tier: Quick Links & Copyright */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-          <div className="flex flex-wrap items-center gap-6">
-            <button onClick={() => onNavClick('about')} className="hover:text-white transition-colors">
-              About & Meetings
-            </button>
-            <button onClick={() => onNavClick('competitions')} className="hover:text-white transition-colors">
-              Competitions
-            </button>
-            <button onClick={() => onNavClick('join')} className="hover:text-white transition-colors">
-              Join C.R.A.B.S.
-            </button>
-            <button onClick={() => onNavClick('tools')} className="hover:text-white transition-colors">
-              Brewing Tools
-            </button>
-            <button onClick={() => onNavClick('vault')} className="hover:text-white transition-colors">
-              Recipe Vault
-            </button>
-            <button onClick={onOpenOfficerModal} className="hover:text-white transition-colors flex items-center gap-1">
-              <Shield className="w-3 h-3" />
+        {/* Bottom Tier: Officer Roster & Copyright */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-300">
+          <div>
+            <button
+              onClick={onOpenOfficerModal}
+              className="text-slate-300 hover:text-white font-medium transition-colors flex items-center gap-1.5"
+            >
+              <Shield className="w-3.5 h-3.5 text-slate-300" />
               <span>Officer Roster</span>
             </button>
-            <a
-              href="./crabs-brew-iis-deploy.zip"
-              download="crabs-brew-iis-deploy.zip"
-              className="hover:text-amber-400 transition-colors flex items-center gap-1 text-slate-400 font-medium"
-              title="Download production bundle and web.config for IIS"
-            >
-              <Download className="w-3 h-3 text-amber-500" />
-              <span>IIS Package (.zip)</span>
-            </a>
           </div>
 
           <div className="text-center sm:text-right">
-            <p>© 1981–{new Date().getFullYear()} Chesapeake Real Ale Brewers Society (<a href="https://crabsbrew.org/" className="underline hover:text-slate-300">crabsbrew.org</a>). All rights reserved.</p>
+            <p className="text-slate-300">© 1981–{new Date().getFullYear()} Chesapeake Real Ale Brewers Society (<a href="https://crabsbrew.org/" className="underline text-slate-200 hover:text-white">crabsbrew.org</a>). All rights reserved.</p>
           </div>
         </div>
 

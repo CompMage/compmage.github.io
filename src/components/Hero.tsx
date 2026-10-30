@@ -1,13 +1,13 @@
 import React from 'react';
-import { Beer, Calendar, MapPin, Sparkles, ArrowRight, Award, Compass, Users } from 'lucide-react';
+import { Beer, MapPin, ArrowRight, Award } from 'lucide-react';
 
 interface HeroProps {
   onJoinClick: () => void;
-  onToolsClick: () => void;
+  onToolsClick?: () => void;
   onCompetitionsClick?: () => void;
 }
 
-export const Hero: React.FC<HeroProps> = ({ onJoinClick, onToolsClick, onCompetitionsClick }) => {
+export const Hero: React.FC<HeroProps> = ({ onJoinClick, onCompetitionsClick }) => {
   return (
     <section id="hero" className="relative overflow-hidden bg-white border-b border-slate-200">
       {/* Subtle background texture */}
@@ -17,12 +17,6 @@ export const Hero: React.FC<HeroProps> = ({ onJoinClick, onToolsClick, onCompeti
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Left Column: Headline and Value Proposition */}
           <div className="lg:col-span-7 space-y-6">
-            {/* Meeting Announcement Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 border border-red-200 text-red-700 text-xs sm:text-sm font-semibold tracking-wide">
-              <Calendar className="w-4 h-4 text-red-600 shrink-0" />
-              <span>Next Meeting: 3rd Wednesday of Every Month @ Heavy Seas Brewery</span>
-            </div>
-
             <div className="space-y-3">
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">
                 Chesapeake Real Ale <br className="hidden sm:inline" />
@@ -53,13 +47,6 @@ export const Hero: React.FC<HeroProps> = ({ onJoinClick, onToolsClick, onCompeti
                   <span>Competitions Schedule</span>
                 </button>
               )}
-
-              <button
-                onClick={onToolsClick}
-                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 text-base font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-50 active:scale-95 rounded-lg transition-all whitespace-nowrap"
-              >
-                <span>Brewing Calculators</span>
-              </button>
             </div>
 
             {/* Quick Proof Metrics / Club Pillars */}

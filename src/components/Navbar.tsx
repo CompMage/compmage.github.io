@@ -45,14 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
                 alt="C.R.A.B.S. Logo"
                 className="w-full h-full object-contain filter drop-shadow-sm"
-                onError={(e) => {
-                  // Fallback if image fails to load
-                  e.currentTarget.style.display = 'none';
-                }}
               />
-              <div className="w-12 h-12 rounded-full bg-red-600 flex items-center justify-center text-white font-black text-xl shadow-inner -z-10 absolute inset-0">
-                CR
-              </div>
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-extrabold tracking-tight text-slate-900 group-hover:text-red-700 transition-colors whitespace-nowrap">

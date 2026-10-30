@@ -102,7 +102,6 @@ export default function App() {
       <main className="flex-1">
         <Hero
           onJoinClick={() => scrollToSection('join')}
-          onToolsClick={() => scrollToSection('tools')}
           onCompetitionsClick={() => scrollToSection('competitions')}
         />
 
