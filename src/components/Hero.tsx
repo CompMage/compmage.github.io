@@ -1,5 +1,5 @@
-import React from 'react';
-import { Beer, MapPin, ArrowRight, Award } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Beer, MapPin, ArrowRight, Award, Maximize2, X } from 'lucide-react';
 
 interface HeroProps {
   onJoinClick: () => void;
@@ -8,6 +8,26 @@ interface HeroProps {
 }
 
 export const Hero: React.FC<HeroProps> = ({ onJoinClick, onCompetitionsClick }) => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsFullscreen(false);
+      }
+    };
+
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isFullscreen]);
   return (
     <section id="hero" className="relative overflow-hidden bg-white border-b border-slate-200">
       {/* Subtle background texture */}
@@ -73,12 +93,26 @@ export const Hero: React.FC<HeroProps> = ({ onJoinClick, onCompetitionsClick }) 
               <div className="absolute -inset-4 bg-gradient-to-r from-red-100 to-amber-100 rounded-3xl blur-2xl opacity-70 -z-10" />
 
               <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xl space-y-6">
-                <div className="flex items-center justify-center p-4 bg-slate-50 rounded-xl border border-slate-100">
-                  <img
-                    src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
-                    alt="CRABS Chesapeake Real Ale Brewers Society Bottle Cap Logo"
-                    className="w-56 h-56 sm:w-64 sm:h-64 object-contain filter drop-shadow-md hover:scale-105 transition-transform duration-300"
-                  />
+                <div className="flex items-center justify-center py-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsFullscreen(true)}
+                    className="group relative cursor-zoom-in rounded-2xl p-2 transition-transform duration-300 focus:outline-none focus:ring-2 focus:ring-red-500/50"
+                    title="Click to view full screen"
+                    aria-label="View C.R.A.B.S. emblem full screen"
+                  >
+                    <img
+                      src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
+                      alt="CRABS Chesapeake Real Ale Brewers Society Bottle Cap Logo"
+                      className="w-56 h-56 sm:w-64 sm:h-64 object-contain filter drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                      <span className="bg-slate-900/80 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg backdrop-blur-xs">
+                        <Maximize2 className="w-3.5 h-3.5 text-red-400" />
+                        <span>Click to expand</span>
+                      </span>
+                    </div>
+                  </button>
                 </div>
 
                 <div className="space-y-3">
@@ -120,6 +154,44 @@ export const Hero: React.FC<HeroProps> = ({ onJoinClick, onCompetitionsClick }) 
           </div>
         </div>
       </div>
+
+      {/* Full Screen Emblem Modal / Lightbox */}
+      {isFullscreen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex flex-col items-center justify-center p-4 sm:p-8 animate-in fade-in duration-200 cursor-zoom-out"
+          onClick={() => setIsFullscreen(false)}
+        >
+          <button
+            onClick={() => setIsFullscreen(false)}
+            className="absolute top-4 right-4 sm:top-6 sm:right-6 text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 p-2.5 rounded-full border border-slate-600 transition-all cursor-pointer z-10"
+            aria-label="Close full screen view"
+            title="Close (Esc)"
+          >
+            <X className="w-6 h-6" />
+          </button>
+
+          <div
+            className="relative max-w-5xl max-h-[90vh] flex flex-col items-center justify-center cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
+              alt="CRABS Chesapeake Real Ale Brewers Society Bottle Cap Logo"
+              className="max-w-[85vw] max-h-[75vh] w-auto h-auto object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none"
+            />
+            <div className="mt-4 text-center">
+              <h4 className="text-lg sm:text-xl font-bold text-white tracking-wide">
+                Chesapeake Real Ale Brewers Society
+              </h4>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                Click anywhere outside or press Escape to close
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };
