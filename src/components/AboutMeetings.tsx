@@ -112,7 +112,7 @@ export const AboutMeetings: React.FC = () => {
             </div>
 
             <div className="pt-6 mt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
-              <span className="text-xs text-slate-500">
+              <span className="text-[13px] leading-[16px] font-bold text-slate-500">
                 Tip: Feel free to bring 2-3 bottles of your latest homebrew or commercial inspiration!
               </span>
               <a
