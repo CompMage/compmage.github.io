@@ -4,9 +4,10 @@ import { Heart, ExternalLink, Mail, MapPin, Calendar, Shield } from 'lucide-reac
 interface FooterProps {
   onNavClick?: (id: string) => void;
   onOpenOfficerModal: () => void;
+  onOpenOfficerPortal?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenOfficerModal }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenOfficerModal, onOpenOfficerPortal }) => {
   return (
     <footer className="bg-slate-950 text-white border-t border-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-12">
@@ -116,16 +117,28 @@ export const Footer: React.FC<FooterProps> = ({ onOpenOfficerModal }) => {
           </div>
         </div>
 
-        {/* Bottom Tier: Officer Roster & Copyright */}
+        {/* Bottom Tier: Officer Roster, Portal & Copyright */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs sm:text-sm text-slate-300">
-          <div>
+          <div className="flex items-center gap-3">
             <button
               onClick={onOpenOfficerModal}
-              className="text-slate-300 hover:text-white font-medium transition-colors flex items-center gap-1.5"
+              className="text-slate-300 hover:text-white font-medium transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Shield className="w-3.5 h-3.5 text-slate-300" />
               <span>Officer Roster</span>
             </button>
+            {onOpenOfficerPortal && (
+              <>
+                <span className="text-slate-700">·</span>
+                <button
+                  onClick={onOpenOfficerPortal}
+                  className="text-amber-400 hover:text-amber-300 font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Shield className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Officers Management Portal</span>
+                </button>
+              </>
+            )}
           </div>
 
           <div className="text-center sm:text-right">

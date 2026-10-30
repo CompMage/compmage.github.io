@@ -7,13 +7,42 @@ import { JoinSection } from './components/JoinSection';
 import { BrewingTools } from './components/BrewingTools';
 import { RecipeVault } from './components/RecipeVault';
 import { OfficerRosterModal } from './components/OfficerRosterModal';
+import { OfficerManagement } from './components/OfficerManagement';
 import { Footer } from './components/Footer';
 import { MemberRegistration } from './types';
 
 export default function App() {
+  const [currentPage, setCurrentPage] = useState<'site' | 'officers'>(() => {
+    return window.location.hash === '#officers' || window.location.hash === '#management' ? 'officers' : 'site';
+  });
   const [activeTab, setActiveTab] = useState<string>('about');
   const [isOfficerModalOpen, setIsOfficerModalOpen] = useState<boolean>(false);
   const [roster, setRoster] = useState<MemberRegistration[]>([]);
+
+  // Hash listener for direct navigation / bookmarks
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === '#officers' || window.location.hash === '#management') {
+        setCurrentPage('officers');
+      } else if (window.location.hash === '' || window.location.hash === '#') {
+        setCurrentPage('site');
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  const goToOfficerPortal = () => {
+    setCurrentPage('officers');
+    window.location.hash = 'officers';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const returnToSite = () => {
+    setCurrentPage('site');
+    window.location.hash = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Load persistent roster on mount
   useEffect(() => {
@@ -72,7 +101,13 @@ export default function App() {
   }, []);
 
   const handleMemberRegistered = (newMember: MemberRegistration) => {
-    setRoster((prev) => [newMember, ...prev]);
+    setRoster((prev) => {
+      const updated = [newMember, ...prev];
+      try {
+        localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
   };
 
   const handleClearRoster = () => {
@@ -81,12 +116,28 @@ export default function App() {
   };
 
   const scrollToSection = (id: string) => {
-    setActiveTab(id);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+    if (currentPage !== 'site') {
+      setCurrentPage('site');
+      window.location.hash = id;
     }
+    setActiveTab(id);
+    setTimeout(() => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
   };
+
+  if (currentPage === 'officers') {
+    return (
+      <OfficerManagement
+        onBackToSite={returnToSite}
+        roster={roster}
+        onUpdateRoster={setRoster}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col text-slate-900 selection:bg-red-600 selection:text-white">
@@ -95,6 +146,7 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenOfficerModal={() => setIsOfficerModalOpen(true)}
+        onOpenOfficerPortal={goToOfficerPortal}
         rosterCount={roster.length}
       />
 
@@ -122,6 +174,7 @@ export default function App() {
       <Footer
         onNavClick={scrollToSection}
         onOpenOfficerModal={() => setIsOfficerModalOpen(true)}
+        onOpenOfficerPortal={goToOfficerPortal}
       />
 
       {/* Officer Roster Modal */}

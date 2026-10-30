@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Trophy, Calendar, Award, CheckCircle2, ChevronRight, ChevronDown, ChevronUp, Medal, FileText, Sparkles, Filter, ExternalLink, Flame, Beer, ArrowRight } from 'lucide-react';
 import { MeetingMinutes } from './MeetingMinutes';
+import {
+  DEFAULT_MONTHLY_RESULTS,
+  calculateTopBrewers,
+  MonthArchive,
+  MonthlyPlacement,
+  TopBrewer
+} from '../data/competitionStandings';
 
 interface MonthlyComp {
   month: string;
@@ -188,249 +195,31 @@ export const CompetitionSchedule: React.FC = () => {
   const [expandedBrewerRank, setExpandedBrewerRank] = useState<number | null>(null);
   const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('all');
 
-  interface TopBrewer {
-    rank: number;
-    name: string;
-    points: number;
-    medals: string;
-    lastBrew: string;
-    monthlyFinishes: {
-      month: string;
-      place: string;
-      points: number;
-      beerName: string;
-      style: string;
-    }[];
-  }
+  // Dynamic monthly results and Top 5 Standings synced with Officer Portal
+  const [monthlyResults, setMonthlyResults] = useState<MonthArchive[]>(() => {
+    try {
+      const stored = localStorage.getItem('crabs_competition_standings_v1');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return DEFAULT_MONTHLY_RESULTS;
+  });
 
-  // 2026 Top 5 Standings calculated with points system: 1st=10, 2nd=7, 3rd=5, 4th=3, 5th=2
-  const currentTop5: TopBrewer[] = [
-    {
-      rank: 1,
-      name: 'Justin Wilson',
-      points: 59,
-      medals: '3 Gold, 3 Silver, 1 Bronze',
-      lastBrew: 'Bavarian Autumn Fest (Märzen)',
-      monthlyFinishes: [
-        { month: 'October', place: '1st Place', points: 10, beerName: 'Bavarian Autumn Fest', style: 'Traditional Märzen (BJCP 6A)' },
-        { month: 'September', place: '4th Place', points: 3, beerName: 'Cascade Crest', style: 'Pacific Northwest Pale (BJCP 18B)' },
-        { month: 'July', place: '3rd Place', points: 5, beerName: 'Little Haze', style: 'Session Hazy Pale Ale (4.2% ABV)' },
-        { month: 'June', place: '2nd Place', points: 7, beerName: 'Hedge Trimmer Homage', style: 'Sapwood Cellars Clone' },
-        { month: 'May', place: '1st Place', points: 10, beerName: 'Plzeň Crisp', style: 'Czech Premium Pale Lager (BJCP 3B)' },
-        { month: 'April', place: '2nd Place', points: 7, beerName: 'Pine & Resin IPA', style: 'West Coast IPA (BJCP 21A)' },
-        { month: 'March', place: '2nd Place', points: 7, beerName: 'Abbey Dubbel', style: 'Belgian Dubbel (BJCP 26B)' },
-        { month: 'January', place: '1st Place', points: 10, beerName: 'Baltic Night Imperial Porter', style: 'Wood-Aged Baltic Porter' }
-      ]
-    },
-    {
-      rank: 2,
-      name: 'John Keough',
-      points: 45,
-      medals: '2 Gold, 2 Silver, 1 Bronze',
-      lastBrew: 'Bohemian Twilight (Czech Dark)',
-      monthlyFinishes: [
-        { month: 'October', place: '2nd Place', points: 7, beerName: 'Bohemian Twilight', style: 'Czech Dark Lager (BJCP 3D)' },
-        { month: 'July', place: '4th Place', points: 3, beerName: 'Emerald Isle Nitro', style: 'Dry Irish Stout (4.1% ABV)' },
-        { month: 'June', place: '1st Place', points: 10, beerName: 'Hedge Trimmer Clone #1', style: 'Sapwood Cellars Clone (Top 5 Selected)' },
-        { month: 'May', place: '3rd Place', points: 5, beerName: 'Amber Danube', style: 'Vienna Lager (BJCP 4A)' },
-        { month: 'April', place: '1st Place', points: 10, beerName: 'Juice Cloud NEIPA', style: 'Hazy IPA (BJCP 21C)' },
-        { month: 'March', place: '4th Place', points: 3, beerName: 'Farmhouse Rustic', style: 'Saison (BJCP 24B)' },
-        { month: 'January', place: '2nd Place', points: 7, beerName: 'Nelson Sauvin Double NEIPA', style: 'Double Hazy IPA' }
-      ]
-    },
-    {
-      rank: 3,
-      name: 'Tom D\'Asto',
-      points: 38,
-      medals: '1 Gold, 2 Silver, 1 Bronze',
-      lastBrew: 'Goat Herder Bock (Dunkles Bock)',
-      monthlyFinishes: [
-        { month: 'October', place: '3rd Place', points: 5, beerName: 'Goat Herder Bock', style: 'Dunkles Bock (BJCP 6C)' },
-        { month: 'September', place: '2nd Place', points: 7, beerName: 'Hallertau Noble Pils', style: 'German Pils (BJCP 5D)' },
-        { month: 'July', place: '1st Place', points: 10, beerName: 'Cask Mild Champion (3.6%)', style: 'English Dark Mild (< 4.5%)' },
-        { month: 'June', place: '5th Place', points: 2, beerName: 'Sapwood Blend Entry', style: 'Sapwood Cellars Clone' },
-        { month: 'May', place: '5th Place', points: 2, beerName: 'Baltic Premium Crisp', style: 'International Pale Lager (BJCP 2A)' },
-        { month: 'April', place: '4th Place', points: 3, beerName: 'Dark Horizon', style: 'Black IPA (BJCP 21B)' },
-        { month: 'February', place: '2nd Place', points: 7, beerName: 'Highland Heather 80/-', style: 'Scottish Export (BJCP 14C)' },
-        { month: 'January', place: '5th Place', points: 2, beerName: 'Cask ESB Reserve', style: 'Extra Special Bitter' }
-      ]
-    },
-    {
-      rank: 4,
-      name: 'Peter Werle',
-      points: 29,
-      medals: '1 Gold, 1 Silver, 2 Bronze',
-      lastBrew: 'Wiesn Gold (Festbier)',
-      monthlyFinishes: [
-        { month: 'September', place: '5th Place', points: 2, beerName: 'Wiesn Gold', style: 'Festbier (BJCP 5B)' },
-        { month: 'June', place: '3rd Place', points: 5, beerName: 'Sapwood Clone Trial', style: 'Sapwood Cellars Clone' },
-        { month: 'May', place: '2nd Place', points: 7, beerName: 'Bavarian Gold Helles', style: 'Munich Helles (BJCP 4A)' },
-        { month: 'March', place: '1st Place', points: 10, beerName: 'Saint Bernardine Tripel', style: 'Trappist Tripel (BJCP 26C)' },
-        { month: 'January', place: '3rd Place', points: 5, beerName: 'Monastery Quad with Figs', style: 'Belgian Dark Strong Ale' }
-      ]
-    },
-    {
-      rank: 5,
-      name: 'Chris Hermance',
-      points: 25,
-      medals: '1 Gold, 1 Silver',
-      lastBrew: 'Pegleg Amber Kellerbier',
-      monthlyFinishes: [
-        { month: 'October', place: '4th Place', points: 3, beerName: 'Pegleg Amber Keller', style: 'Amber Malty Kellerbier (BJCP 6B)' },
-        { month: 'September', place: '1st Place', points: 10, beerName: 'Cascade Bay Pale', style: 'American Pale Ale (BJCP 18B)' },
-        { month: 'July', place: '2nd Place', points: 7, beerName: 'Chesapeake Summer Saison (3.8%)', style: 'Table Saison (< 4.5%)' },
-        { month: 'March', place: '5th Place', points: 2, beerName: 'Northern Garde', style: 'Bière de Garde (BJCP 24C)' },
-        { month: 'February', place: '4th Place', points: 3, beerName: 'Old Crabby Ordinary', style: 'Ordinary Bitter (BJCP 11A)' }
-      ]
-    }
-  ];
+  useEffect(() => {
+    const handleSync = () => {
+      try {
+        const stored = localStorage.getItem('crabs_competition_standings_v1');
+        if (stored) setMonthlyResults(JSON.parse(stored));
+      } catch {}
+    };
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('crabs-standings-updated', handleSync);
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('crabs-standings-updated', handleSync);
+    };
+  }, []);
 
-  interface MonthlyPlacement {
-    place: number;
-    points: number;
-    brewer: string;
-    beerName: string;
-    style: string;
-  }
-
-  interface MonthArchive {
-    month: string;
-    monthNumber: number;
-    styleCategory: string;
-    bjcpCode: string;
-    entriesCount: number;
-    standings: MonthlyPlacement[];
-  }
-
-  // Monthly Standings Breakout Archive matching 2026 competition winners
-  const monthlyResultsArchive: MonthArchive[] = [
-    {
-      month: 'January',
-      monthNumber: 1,
-      styleCategory: 'Hedonistic',
-      bjcpCode: 'No rules/no styles',
-      entriesCount: 14,
-      standings: [
-        { place: 1, points: 10, brewer: 'Justin Wilson', beerName: 'Baltic Night Imperial Porter', style: 'Wood-Aged Baltic Porter' },
-        { place: 2, points: 7, brewer: 'John Keough', beerName: 'Nelson Sauvin Double NEIPA', style: 'Double Hazy IPA' },
-        { place: 3, points: 5, brewer: 'Peter Werle', beerName: 'Monastery Quad with Figs', style: 'Belgian Dark Strong Ale' },
-        { place: 4, points: 3, brewer: 'Craig Bryant', beerName: 'English Old Oak Barleywine', style: 'English Barleywine' },
-        { place: 5, points: 2, brewer: 'Tom D\'Asto', beerName: 'Cask ESB Reserve', style: 'Extra Special Bitter' }
-      ]
-    },
-    {
-      month: 'February',
-      monthNumber: 2,
-      styleCategory: 'UK Beers',
-      bjcpCode: 'BJCP 11A-C, 14A-C, 15A',
-      entriesCount: 10,
-      standings: [
-        { place: 1, points: 10, brewer: 'John Bugert', beerName: 'Cask Best Bitter', style: 'Best Bitter (BJCP 11B)' },
-        { place: 2, points: 7, brewer: 'Tom D\'Asto', beerName: 'Highland Heather 80/-', style: 'Scottish Export (BJCP 14C)' },
-        { place: 3, points: 5, brewer: 'Les White', beerName: 'Shamrock Red Ale', style: 'Irish Red Ale (BJCP 15A)' },
-        { place: 4, points: 3, brewer: 'Chris Hermance', beerName: 'Old Crabby Ordinary', style: 'Ordinary Bitter (BJCP 11A)' },
-        { place: 5, points: 2, brewer: 'Joe O\'Keefe', beerName: 'Presidential Strong Bitter', style: 'Strong Bitter (BJCP 11C)' }
-      ]
-    },
-    {
-      month: 'March',
-      monthNumber: 3,
-      styleCategory: 'Belgian & Trappist',
-      bjcpCode: 'BJCP 24B-C, 25A-B, 26A-C',
-      entriesCount: 13,
-      standings: [
-        { place: 1, points: 10, brewer: 'Peter Werle', beerName: 'Saint Bernardine Tripel', style: 'Trappist Tripel (BJCP 26C)' },
-        { place: 2, points: 7, brewer: 'Justin Wilson', beerName: 'Abbey Dubbel', style: 'Belgian Dubbel (BJCP 26B)' },
-        { place: 3, points: 5, brewer: 'Elena Rostova', beerName: 'Golden Devil Ale', style: 'Belgian Golden Strong (BJCP 25A)' },
-        { place: 4, points: 3, brewer: 'John Keough', beerName: 'Farmhouse Rustic', style: 'Saison (BJCP 24B)' },
-        { place: 5, points: 2, brewer: 'Chris Hermance', beerName: 'Northern Garde', style: 'Bière de Garde (BJCP 24C)' }
-      ]
-    },
-    {
-      month: 'April',
-      monthNumber: 4,
-      styleCategory: 'IPAs',
-      bjcpCode: 'BJCP 12C, 21A-C',
-      entriesCount: 16,
-      standings: [
-        { place: 1, points: 10, brewer: 'John Keough', beerName: 'Juice Cloud NEIPA', style: 'Hazy IPA (BJCP 21C)' },
-        { place: 2, points: 7, brewer: 'Justin Wilson', beerName: 'Pine & Resin IPA', style: 'West Coast IPA (BJCP 21A)' },
-        { place: 3, points: 5, brewer: 'Brian England', beerName: 'East India Merchant', style: 'English IPA (BJCP 12C)' },
-        { place: 4, points: 3, brewer: 'Tom D\'Asto', beerName: 'Dark Horizon', style: 'Black IPA (BJCP 21B)' },
-        { place: 5, points: 2, brewer: 'Bob Baroncinni', beerName: 'Hop Harbor IPA', style: 'American IPA (BJCP 21A)' }
-      ]
-    },
-    {
-      month: 'May',
-      monthNumber: 5,
-      styleCategory: 'Pale, Malty',
-      bjcpCode: 'BJCP 1A-C, 2A, 3A-B, 4A-C',
-      entriesCount: 12,
-      standings: [
-        { place: 1, points: 10, brewer: 'Justin Wilson', beerName: 'Plzeň Crisp', style: 'Czech Premium Pale Lager (BJCP 3B)' },
-        { place: 2, points: 7, brewer: 'Peter Werle', beerName: 'Bavarian Gold Helles', style: 'Munich Helles (BJCP 4A)' },
-        { place: 3, points: 5, brewer: 'John Keough', beerName: 'Amber Danube', style: 'Vienna Lager (BJCP 4A)' },
-        { place: 4, points: 3, brewer: 'Craig Bryant', beerName: 'Corn Belt Classic', style: 'Cream Ale (BJCP 1C)' },
-        { place: 5, points: 2, brewer: 'Tom D\'Asto', beerName: 'Baltic Premium Crisp', style: 'International Pale Lager (BJCP 2A)' }
-      ]
-    },
-    {
-      month: 'June',
-      monthNumber: 6,
-      styleCategory: 'Sapwood Cellars Clone',
-      bjcpCode: 'Sapwood Cellars Official Clone',
-      entriesCount: 12,
-      standings: [
-        { place: 1, points: 10, brewer: 'John Keough', beerName: 'Hedge Trimmer Clone #1', style: 'Sapwood Cellars Clone (Judged by Sapwood)' },
-        { place: 2, points: 7, brewer: 'Justin Wilson', beerName: 'Hedge Trimmer Homage', style: 'Sapwood Cellars Clone' },
-        { place: 3, points: 5, brewer: 'Peter Werle', beerName: 'Sapwood Clone Trial', style: 'Sapwood Cellars Clone' },
-        { place: 4, points: 3, brewer: 'John Bugert', beerName: 'Cellar Trimmer Clone', style: 'Sapwood Cellars Clone' },
-        { place: 5, points: 2, brewer: 'Tom D\'Asto', beerName: 'Sapwood Blend Entry', style: 'Sapwood Cellars Clone' }
-      ]
-    },
-    {
-      month: 'July',
-      monthNumber: 7,
-      styleCategory: 'Session Beers',
-      bjcpCode: 'Anything under 4.5% ABV',
-      entriesCount: 11,
-      standings: [
-        { place: 1, points: 10, brewer: 'Tom D\'Asto', beerName: 'Cask Mild Champion (3.6%)', style: 'English Dark Mild (< 4.5%)' },
-        { place: 2, points: 7, brewer: 'Chris Hermance', beerName: 'Chesapeake Summer Saison (3.8%)', style: 'Table Saison (< 4.5%)' },
-        { place: 3, points: 5, brewer: 'Justin Wilson', beerName: 'Little Haze (4.2%)', style: 'Session Hazy Pale (< 4.5%)' },
-        { place: 4, points: 3, brewer: 'John Keough', beerName: 'Emerald Isle Nitro (4.1%)', style: 'Dry Irish Stout (< 4.5%)' },
-        { place: 5, points: 2, brewer: 'Joe O\'Keefe', beerName: 'Patapsco Session Bitter (3.7%)', style: 'Ordinary Bitter (< 4.5%)' }
-      ]
-    },
-    {
-      month: 'September',
-      monthNumber: 9,
-      styleCategory: 'Pale, Bitter / Hoppy',
-      bjcpCode: 'BJCP 5A-D, 12A-B, 18A-B',
-      entriesCount: 15,
-      standings: [
-        { place: 1, points: 10, brewer: 'Chris Hermance', beerName: 'Cascade Bay Pale', style: 'American Pale Ale (BJCP 18B)' },
-        { place: 2, points: 7, brewer: 'Tom D\'Asto', beerName: 'Hallertau Noble Pils', style: 'German Pils (BJCP 5D)' },
-        { place: 3, points: 5, brewer: 'John Jester', beerName: 'Galaxy Southern Pale', style: 'Australian Pale Ale (BJCP 12B)' },
-        { place: 4, points: 3, brewer: 'Justin Wilson', beerName: 'Cascade Crest', style: 'Pacific Northwest Pale (BJCP 18B)' },
-        { place: 5, points: 2, brewer: 'Peter Werle', beerName: 'Wiesn Gold', style: 'Festbier (BJCP 5B)' }
-      ]
-    },
-    {
-      month: 'October',
-      monthNumber: 10,
-      styleCategory: 'Amber / Dark, Malty',
-      bjcpCode: 'BJCP 2B-C, 3C-D, 6A-C, 8A-B',
-      entriesCount: 14,
-      standings: [
-        { place: 1, points: 10, brewer: 'Justin Wilson', beerName: 'Bavarian Autumn Fest', style: 'Traditional Märzen (BJCP 6A)' },
-        { place: 2, points: 7, brewer: 'John Keough', beerName: 'Bohemian Twilight', style: 'Czech Dark Lager (BJCP 3D)' },
-        { place: 3, points: 5, brewer: 'Tom D\'Asto', beerName: 'Goat Herder Bock', style: 'Dunkles Bock (BJCP 6C)' },
-        { place: 4, points: 3, brewer: 'Chris Hermance', beerName: 'Pegleg Amber Keller', style: 'Amber Malty Kellerbier (BJCP 6B)' },
-        { place: 5, points: 2, brewer: 'John Bugert', beerName: 'Bavarian Night Dunkel', style: 'Munich Dunkel (BJCP 8A)' }
-      ]
-    }
-  ];
+  const currentTop5 = calculateTopBrewers(monthlyResults);
 
   return (
     <section id="competitions" className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200">
@@ -909,7 +698,7 @@ export const CompetitionSchedule: React.FC = () => {
                       >
                         All Months
                       </button>
-                      {monthlyResultsArchive.map((m) => (
+                      {monthlyResults.map((m) => (
                         <button
                           key={m.month}
                           onClick={() => setSelectedMonthFilter(m.month)}
@@ -926,7 +715,7 @@ export const CompetitionSchedule: React.FC = () => {
 
                     {/* Monthly Results Flights */}
                     <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
-                      {monthlyResultsArchive
+                      {monthlyResults
                         .filter((m) => selectedMonthFilter === 'all' || selectedMonthFilter === m.month)
                         .map((flight) => (
                           <div key={flight.month} className="border border-slate-200 rounded-xl p-4 bg-white shadow-2xs space-y-3">

@@ -1,10 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Beer, Search, Filter, BookOpen, Plus, X, Award, ExternalLink, Printer, ChevronRight, Trash2, FileText, Sparkles, Check } from 'lucide-react';
 import { CLUB_RECIPES } from '../data/mockRecipes';
 import { Recipe } from '../types';
 
 export const RecipeVault: React.FC = () => {
-  const [recipes, setRecipes] = useState<Recipe[]>(CLUB_RECIPES);
+  const [recipes, setRecipes] = useState<Recipe[]>(() => {
+    try {
+      const stored = localStorage.getItem('crabs_recipes_vault_v1');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return CLUB_RECIPES;
+  });
+
+  useEffect(() => {
+    const handleSync = () => {
+      try {
+        const stored = localStorage.getItem('crabs_recipes_vault_v1');
+        if (stored) setRecipes(JSON.parse(stored));
+      } catch {}
+    };
+    window.addEventListener('storage', handleSync);
+    window.addEventListener('crabs-recipes-updated', handleSync);
+    return () => {
+      window.removeEventListener('storage', handleSync);
+      window.removeEventListener('crabs-recipes-updated', handleSync);
+    };
+  }, []);
+
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeRecipe, setActiveRecipe] = useState<Recipe | null>(null);
@@ -133,7 +155,15 @@ export const RecipeVault: React.FC = () => {
       caskConditioned: newCategory === 'real-ale'
     };
 
-    setRecipes([createdRecipe, ...recipes]);
+    const updatedRecipes = [createdRecipe, ...recipes];
+    setRecipes(updatedRecipes);
+    try {
+      localStorage.setItem('crabs_recipes_vault_v1', JSON.stringify(updatedRecipes));
+      window.dispatchEvent(new Event('crabs-recipes-updated'));
+    } catch (err) {
+      console.error('Failed to save recipe to localStorage', err);
+    }
+
     setSubmittedMessage(`Recipe "${createdRecipe.name}" by ${createdRecipe.brewer} successfully added to the Vault!`);
     
     setTimeout(() => {
@@ -148,6 +178,22 @@ export const RecipeVault: React.FC = () => {
       setNewNotes('');
       setNewAward('');
     }, 1200);
+  };
+
+  const handleDeleteRecipe = (id: string, name: string) => {
+    if (window.confirm(`Are you sure you want to remove "${name}" from the Recipe Vault?`)) {
+      const updated = recipes.filter((r) => r.id !== id);
+      setRecipes(updated);
+      try {
+        localStorage.setItem('crabs_recipes_vault_v1', JSON.stringify(updated));
+        window.dispatchEvent(new Event('crabs-recipes-updated'));
+      } catch (err) {
+        console.error('Failed to remove recipe from localStorage', err);
+      }
+      if (activeRecipe?.id === id) {
+        setActiveRecipe(null);
+      }
+    }
   };
 
   return (
@@ -388,17 +434,27 @@ export const RecipeVault: React.FC = () => {
               <div className="pt-2 flex items-center justify-between">
                 <button
                   onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Print Brewday Sheet</span>
                 </button>
-                <button
-                  onClick={() => setActiveRecipe(null)}
-                  className="px-5 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800"
-                >
-                  Close Recipe
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleDeleteRecipe(activeRecipe.id, activeRecipe.name)}
+                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-red-200 cursor-pointer"
+                    title="Remove recipe from Vault"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Remove Recipe</span>
+                  </button>
+                  <button
+                    onClick={() => setActiveRecipe(null)}
+                    className="px-5 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 cursor-pointer"
+                  >
+                    Close Recipe
+                  </button>
+                </div>
               </div>
             </div>
           </div>
