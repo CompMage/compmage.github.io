@@ -199,7 +199,7 @@ export const JoinSection: React.FC<JoinSectionProps> = ({ onMemberRegistered }) 
           </h2>
           <p className="text-sm sm:text-base text-slate-600">
             Become a part of Maryland's historic cask ale and homebrewing society. 
-            Enjoy monthly sensory shares, technical workshops, guild access, and great fellowship.
+            Enjoy monthly bottle shares, technical workshops, guild access, and great fellowship.
           </p>
         </div>
 

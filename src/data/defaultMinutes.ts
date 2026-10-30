@@ -43,7 +43,7 @@ Specialty Fermentations & Barrel Project Fill (presented by Les White & Barrel C
 - Oct 21: Next C.R.A.B.S. Meeting: Amber / Dark, Malty Lagers Competition
 
 • OPEN FLOOR & BOTTLE SHARE:
-Tasting and sensory critique of member commercial inspirations and homebrews. Meeting adjourned at 9:18 PM.`
+Tasting and critique of member commercial inspirations and homebrews. Meeting adjourned at 9:18 PM.`
   },
   {
     id: 'aug-2026',
@@ -100,7 +100,7 @@ Charity Homebrewing & Checkerspot Extravaganza Debrief (Club Officers & Event Pa
 
 • COMPETITION RESULTS (Amber / Dark, Malty Lagers):
 Dark and malty lagers evaluated blind by attendees.
-Winner: Justin Wilson (Czech Dark Lager). Constructive sensory feedback on malt depth, decoction character, and clean lager fermentation profiles.
+Winner: Justin Wilson (Czech Dark Lager). Constructive feedback on malt depth, decoction character, and clean lager fermentation profiles.
 
 • UPCOMING EVENTS:
 - Nov: Upcoming Stouts & Porters Flight

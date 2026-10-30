@@ -317,7 +317,7 @@ export const BrewingTools: React.FC = () => {
               </div>
 
               <div className="text-xs text-slate-500 space-y-1">
-                <p className="font-semibold text-slate-700">Sensory Expectation:</p>
+                <p className="font-semibold text-slate-700">Flavor Profile & Character:</p>
                 <p>
                   {abvResults.standard < 4.0 && 'Light, delicate session ale with high drinkability.'}
                   {abvResults.standard >= 4.0 && abvResults.standard <= 5.5 && 'Classic pub strength real ale with balanced malt presence and pleasant finish.'}

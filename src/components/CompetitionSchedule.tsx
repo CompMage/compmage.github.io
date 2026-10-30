@@ -237,7 +237,7 @@ export const CompetitionSchedule: React.FC = () => {
             </h2>
             <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
               Every month at Heavy Seas Brewery, members enter their homebrews for friendly, constructive 
-              BJCP sensory feedback and points toward the annual <strong>Brewer of the Year</strong> title.
+              BJCP feedback and points toward the annual <strong>Brewer of the Year</strong> title.
             </p>
           </div>
 
@@ -378,7 +378,7 @@ export const CompetitionSchedule: React.FC = () => {
                   Beer Judge Certification Program Guidelines
                 </h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  Club competitions and sensory feedback follow the official BJCP Beer Style Guidelines. Access comprehensive style parameters, vital statistics, and commercial examples at bjcp.org.
+                  Club competitions and evaluations follow the official BJCP Beer Style Guidelines. Access comprehensive style parameters, vital statistics, and commercial examples at bjcp.org.
                 </p>
                 <div className="pt-1 inline-flex items-center gap-1.5 text-xs font-bold text-red-600 group-hover:underline">
                   <span>Visit https://www.bjcp.org/bjcp-style-guidelines/</span>
@@ -472,7 +472,7 @@ export const CompetitionSchedule: React.FC = () => {
                     2026 Brewer of the Year Standings
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500">
-                    Cumulative championship points earned from monthly blind BJCP sensory flights (1st=10, 2nd=7, 3rd=5, 4th=3, 5th=2).
+                    Cumulative championship points earned from monthly blind BJCP competition flights (1st=10, 2nd=7, 3rd=5, 4th=3, 5th=2).
                   </p>
                 </div>
               </div>

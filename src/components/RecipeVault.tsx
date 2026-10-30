@@ -789,7 +789,7 @@ export const RecipeVault: React.FC = () => {
                       rows={3}
                       value={newNotes}
                       onChange={(e) => setNewNotes(e.target.value)}
-                      placeholder="Add water profile notes, cask dry hopping techniques, carbonation levels, or sensory recommendations..."
+                      placeholder="Add water profile notes, cask dry hopping techniques, carbonation levels, or tasting recommendations..."
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900 text-xs focus:ring-1 focus:ring-red-600 focus:border-red-600"
                     />
                     <p className="text-[11px] text-slate-400">

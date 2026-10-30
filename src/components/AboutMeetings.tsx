@@ -105,7 +105,7 @@ export const AboutMeetings: React.FC = () => {
 
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-1 sm:col-span-2">
                   <span className="text-xs font-bold text-slate-500 uppercase">Typical Meeting Agenda</span>
-                  <p className="text-sm font-semibold text-slate-900">Monthly Competition Flight & Sensory Share</p>
+                  <p className="text-sm font-semibold text-slate-900">Monthly Competition Flight & Bottle Share</p>
                   <p className="text-xs text-slate-600">Officer announcements, educational presentation, and member homebrew bottle sampling.</p>
                 </div>
               </div>

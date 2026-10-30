@@ -145,7 +145,7 @@ export const Hero: React.FC<HeroProps> = ({ onJoinClick, onCompetitionsClick }) 
                   </div>
 
                   <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
-                    <span>Bring your homebrew for sensory feedback!</span>
+                    <span>Bring your homebrew for constructive feedback!</span>
                     <span className="font-semibold text-slate-800">Guests Welcome</span>
                   </div>
                 </div>
