@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar, MapPin, Beer, Award, Users, ExternalLink, HeartHandshake, BookOpen, Sparkles } from 'lucide-react';
+import { Calendar, MapPin, Beer, Users, ExternalLink, HeartHandshake, BookOpen, Sparkles, Wine } from 'lucide-react';
 
 export const AboutMeetings: React.FC = () => {
   return (
@@ -9,15 +9,13 @@ export const AboutMeetings: React.FC = () => {
         {/* Section Header */}
         <div className="max-w-3xl space-y-4">
           <p className="text-xs font-bold tracking-widest uppercase text-red-600">
-            About The Society
+            About the Club
           </p>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Preserving Real Ale, Fostering Craft Brewing in Maryland
+            Real Ale, Fostering Craft Brewing in Maryland
           </h2>
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
-            The Chesapeake Real Ale Brewers Society (C.R.A.B.S.) was established in 1981 by a band of passionate 
-            Baltimore brewers. For over four decades, our members have promoted traditional cask conditioning, 
-            recipe experimentation, and homebrew education across the Free State.
+            The Chesapeake Real Ale Brewers Society (C.R.A.B.S.) began in 1981 when a handful of Baltimore brewers decided great beer was best made together. More than forty years later, we remain a vibrant, welcoming community dedicated to exploring the full spectrum of brewing styles and techniques. Whether you are boiling extract on the kitchen stove, dialing in advanced multi-vessel electric rigs, or aging bold dark ales on wood, C.R.A.B.S. brings Maryland brewers together to share recipes, refine processes, and learn something new with every batch.
           </p>
         </div>
 
@@ -27,10 +25,12 @@ export const AboutMeetings: React.FC = () => {
             <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center">
               <Beer className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Real Ale & Cask Craft</h3>
+            <h3 className="text-lg font-bold text-slate-900">Real Ale & Lager Craft</h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              We champion traditional unpasteurized, unfiltered beer naturally carbonated in casks or bottles 
-              and pulled through authentic beer engines.
+              We brew the entire spectrum from resinous, hop-drenched double IPAs and mouth-puckering wild sours to effervescent Belgian ales, razor-crisp lagers, and rich, midnight-black stouts.
+              <span className="block mt-2 font-medium text-slate-800">
+                If it ferments, we celebrate it.
+              </span>
             </p>
           </div>
 
@@ -38,21 +38,19 @@ export const AboutMeetings: React.FC = () => {
             <div className="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
               <Users className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Monthly Sensory Shares</h3>
+            <h3 className="text-lg font-bold text-slate-900">Monthly Shares</h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              Every meeting is a friendly technical tasting. Bring your bottles or growlers to receive constructive, 
-              BJCP-calibrated feedback from fellow club members.
+              Bring whatever you’re currently brewing in bottles or growlers. Our meetings center on constructive, supportive tastings where members offer BJCP-aligned notes to help you troubleshoot, tweak, and level up your homebrew.
             </p>
           </div>
 
           <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-3">
-            <div className="w-10 h-10 rounded-lg bg-slate-100 text-slate-800 flex items-center justify-center">
-              <Award className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+              <Wine className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-900">Competitions & Guild</h3>
+            <h3 className="text-lg font-bold text-slate-900">Wine, Meade, and Kombuchas</h3>
             <p className="text-sm text-slate-600 leading-relaxed">
-              Proud member of the Maryland Homebrewers Guild. We participate in state circuit competitions, 
-              AHA events, and collaborative guild brews.
+              Great fermentation doesn’t stop at barley and hops. From dry, tannic country wines and varietal ciders to delicate floral meads and tangy, probiotic kombuchas, we explore the full universe of fermented beverages.
             </p>
           </div>
         </div>
