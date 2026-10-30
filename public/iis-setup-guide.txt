@@ -1,0 +1,97 @@
+========================================================================
+CHESAPEAKE REAL ALE BREWERS SOCIETY (C.R.A.B.S.)
+IIS (INTERNET INFORMATION SERVICES) DEPLOYMENT INSTRUCTIONS
+========================================================================
+
+This ZIP archive contains the complete production-ready build of the 
+C.R.A.B.S. web application tailored specifically for hosting on Windows 
+Server / Windows 10 / Windows 11 with Microsoft IIS.
+
+------------------------------------------------------------------------
+1. PREREQUISITES FOR IIS
+------------------------------------------------------------------------
+- Microsoft IIS (Internet Information Services) installed and running.
+- IIS URL Rewrite Module 2.1 (Required for Single-Page Application routing).
+  Download directly from Microsoft if not already installed on your server:
+  https://www.iis.net/downloads/microsoft/url-rewrite
+
+------------------------------------------------------------------------
+2. CONTENTS OF THIS PACKAGE
+------------------------------------------------------------------------
+- index.html          : Main application entry point
+- web.config          : Preconfigured IIS configuration containing:
+                        * SPA rewrite rules to route requests to index.html
+                        * MIME type mappings (.json, .woff2, .webp, .svg)
+                        * Security response headers
+- assets/             : Compiled JavaScript, CSS stylesheets, and imagery
+- iis-setup-guide.txt : This documentation guide
+
+------------------------------------------------------------------------
+3. STEP-BY-STEP DEPLOYMENT STEPS
+------------------------------------------------------------------------
+
+STEP 1: Extract Files on the Server
+- Extract all contents of this ZIP archive into your chosen website directory,
+  for example:
+  C:\inetpub\wwwroot\crabsbrew
+
+STEP 2: Configure File & Folder Permissions
+- Right-click the folder (e.g., C:\inetpub\wwwroot\crabsbrew) -> Properties.
+- Go to the "Security" tab -> "Edit".
+- Ensure "IIS_IUSRS" (and "IUSR" if using anonymous authentication) has:
+  [X] Read & execute
+  [X] List folder contents
+  [X] Read
+
+STEP 3: Open IIS Manager
+- Press Win + R, type `inetmgr`, and press Enter.
+
+STEP 4: Create or Update Website
+Option A: Create a New Website
+- In IIS Manager, right-click "Sites" -> "Add Website...".
+- Site name: CRABS-Web
+- Physical path: C:\inetpub\wwwroot\crabsbrew
+- Binding:
+  * Type: http (or https)
+  * IP Address: All Unassigned (or your server's IP)
+  * Port: 80 (or 443 with your SSL certificate)
+  * Host name: crabsbrew.org (or your desired domain/subdomain)
+- Click OK.
+
+Option B: Host under Existing Site / Virtual Directory
+- If deploying under an existing site or virtual directory, place the files
+  directly in the target folder. The relative URL structure will adapt 
+  automatically.
+
+STEP 5: Configure the Application Pool
+- In IIS Manager, click "Application Pools" in the left panel.
+- Locate the Application Pool assigned to your site (e.g. "CRABS-Web").
+- Right-click it and choose "Basic Settings...":
+  * .NET CLR version: Select "No Managed Code"
+    (This is a purely static client-side React bundle, so disabling the 
+     .NET runtime saves CPU, memory, and optimizes delivery speed).
+  * Managed pipeline mode: Integrated
+- Click OK.
+
+STEP 6: Test and Verify
+- Open your browser and navigate to http://localhost or your configured domain.
+- Verify that clicking navigation items ("About", "Competitions", "Minutes", 
+  "Brewing Tools", "Recipe Vault") and refreshing the browser works smoothly.
+  The included `web.config` ensures all sub-routes correctly serve index.html.
+
+------------------------------------------------------------------------
+4. TROUBLESHOOTING
+------------------------------------------------------------------------
+- HTTP 500.19 Error (Configuration Error):
+  Cause: The IIS URL Rewrite module is missing.
+  Solution: Install "IIS URL Rewrite Module" from Microsoft (link above) 
+  and restart IIS (`iisreset`).
+
+- HTTP 404 for Font/JSON/WebP Files:
+  Cause: Missing MIME types.
+  Solution: The provided `web.config` already defines these MIME types. 
+  Ensure `web.config` is placed in the root folder alongside index.html.
+
+========================================================================
+C.R.A.B.S. - Chesapeake Real Ale Brewers Society (Founded 1981)
+========================================================================
