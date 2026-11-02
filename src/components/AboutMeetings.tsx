@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, MapPin, Beer, Users, ExternalLink, HeartHandshake, BookOpen, Sparkles, Wine } from 'lucide-react';
+import { MeetingMinutes } from './MeetingMinutes';
 
 export const AboutMeetings: React.FC = () => {
   return (
@@ -273,6 +274,9 @@ export const AboutMeetings: React.FC = () => {
             </div>
           </div>
         </div>
+
+        {/* Meeting Minutes Archive */}
+        <MeetingMinutes />
 
       </div>
     </section>

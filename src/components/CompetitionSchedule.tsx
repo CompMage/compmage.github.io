@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Trophy, Calendar, Award, CheckCircle2, ChevronRight, ChevronDown, ChevronUp, Medal, FileText, Sparkles, Filter, ExternalLink, Flame, Beer, ArrowRight } from 'lucide-react';
-import { MeetingMinutes } from './MeetingMinutes';
 import {
   DEFAULT_MONTHLY_RESULTS,
   calculateTopBrewers,
@@ -446,9 +445,6 @@ export const CompetitionSchedule: React.FC = () => {
           </div>
         )}
 
-        {/* MEETING MINUTES SECTION */}
-        <MeetingMinutes />
-
         {/* SECTION 4: 2026 BREWER OF THE YEAR STANDINGS & POINT SYSTEM */}
         <div className="pt-6 border-t border-slate-200">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden transition-all">
@@ -744,12 +740,12 @@ export const CompetitionSchedule: React.FC = () => {
                                     <th className="py-1">Place</th>
                                     <th className="py-1">Points</th>
                                     <th className="py-1">Brewer</th>
-                                    <th className="py-1">Beer & Subcategory</th>
+                                    <th className="py-1">Style / Subcategory</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 bg-white rounded-lg">
-                                  {flight.standings.map((s) => (
-                                    <tr key={s.place} className="hover:bg-slate-50">
+                                  {flight.standings.map((s, sIdx) => (
+                                    <tr key={`${s.place}-${s.brewer}-${sIdx}`} className="hover:bg-slate-50">
                                       <td className="py-2 px-2 font-bold font-mono">
                                         {s.place === 1 ? '🥇 1st' : s.place === 2 ? '🥈 2nd' : s.place === 3 ? '🥉 3rd' : `${s.place}th`}
                                       </td>
@@ -760,8 +756,14 @@ export const CompetitionSchedule: React.FC = () => {
                                         {s.brewer}
                                       </td>
                                       <td className="py-2 px-2 text-slate-600">
-                                        <span className="font-semibold text-slate-800">{s.beerName}</span>
-                                        <span className="text-[10px] text-slate-500 block">{s.style}</span>
+                                        {s.beerName && s.beerName !== 'Homebrew Entry' ? (
+                                          <>
+                                            <span className="font-semibold text-slate-800">{s.beerName}</span>
+                                            <span className="text-[10px] text-slate-500 block">{s.style}</span>
+                                          </>
+                                        ) : (
+                                          <span className="font-semibold text-slate-800">{s.style}</span>
+                                        )}
                                       </td>
                                     </tr>
                                   ))}

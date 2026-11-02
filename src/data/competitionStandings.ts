@@ -2,7 +2,7 @@ export interface MonthlyPlacement {
   place: number;
   points: number;
   brewer: string;
-  beerName: string;
+  beerName?: string;
   style: string;
 }
 
@@ -25,7 +25,7 @@ export interface TopBrewer {
     month: string;
     place: string;
     points: number;
-    beerName: string;
+    beerName?: string;
     style: string;
   }[];
 }
@@ -231,7 +231,11 @@ export function calculateTopBrewers(archives: MonthArchive[]): TopBrewer[] {
     const medals = medalsList.length > 0 ? medalsList.join(', ') : 'Ranked Competitor';
 
     const last = b.finishes[b.finishes.length - 1];
-    const lastBrew = last ? `${last.beerName} (${last.style})` : 'Homebrew Entry';
+    const lastBrew = last
+      ? last.beerName && last.beerName !== 'Homebrew Entry'
+        ? `${last.beerName} (${last.style})`
+        : last.style || 'Homebrew Entry'
+      : 'Homebrew Entry';
 
     return {
       rank: idx + 1,

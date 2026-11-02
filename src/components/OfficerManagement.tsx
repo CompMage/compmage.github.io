@@ -151,26 +151,105 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
   const [standingsBjcp, setStandingsBjcp] = useState<string>('BJCP 15A-C, 16A-D');
   const [standingsEntriesCount, setStandingsEntriesCount] = useState<number>(14);
 
-  const [place1, setPlace1] = useState<MonthlyPlacement>({ place: 1, points: 10, brewer: '', beerName: '', style: '' });
-  const [place2, setPlace2] = useState<MonthlyPlacement>({ place: 2, points: 7, brewer: '', beerName: '', style: '' });
-  const [place3, setPlace3] = useState<MonthlyPlacement>({ place: 3, points: 5, brewer: '', beerName: '', style: '' });
-  const [place4, setPlace4] = useState<MonthlyPlacement>({ place: 4, points: 3, brewer: '', beerName: '', style: '' });
-  const [place5, setPlace5] = useState<MonthlyPlacement>({ place: 5, points: 2, brewer: '', beerName: '', style: '' });
+  interface RankEntry {
+    id: string;
+    brewer: string;
+    style: string;
+  }
+
+  interface RankTier {
+    place: number;
+    points: number;
+    label: string;
+    entries: RankEntry[];
+  }
+
+  const initialRanks: RankTier[] = [
+    { place: 1, points: 10, label: '1st Place', entries: [{ id: '1-1', brewer: '', style: '' }] },
+    { place: 2, points: 7, label: '2nd Place', entries: [{ id: '2-1', brewer: '', style: '' }] },
+    { place: 3, points: 5, label: '3rd Place', entries: [{ id: '3-1', brewer: '', style: '' }] },
+    { place: 4, points: 3, label: '4th Place', entries: [{ id: '4-1', brewer: '', style: '' }] },
+    { place: 5, points: 2, label: '5th Place', entries: [{ id: '5-1', brewer: '', style: '' }] }
+  ];
+
+  const [ranks, setRanks] = useState<RankTier[]>(initialRanks);
+
+  const handleUpdateRankEntry = (place: number, entryId: string, field: 'brewer' | 'style', value: string) => {
+    setRanks((prev) =>
+      prev.map((tier) => {
+        if (tier.place !== place) return tier;
+        return {
+          ...tier,
+          entries: tier.entries.map((entry) =>
+            entry.id === entryId ? { ...entry, [field]: value } : entry
+          )
+        };
+      })
+    );
+  };
+
+  const handleAddRankTie = (place: number) => {
+    setRanks((prev) =>
+      prev.map((tier) => {
+        if (tier.place !== place) return tier;
+        return {
+          ...tier,
+          entries: [
+            ...tier.entries,
+            { id: `${place}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`, brewer: '', style: '' }
+          ]
+        };
+      })
+    );
+  };
+
+  const handleRemoveRankTie = (place: number, entryId: string) => {
+    setRanks((prev) =>
+      prev.map((tier) => {
+        if (tier.place !== place) return tier;
+        if (tier.entries.length <= 1) {
+          return {
+            ...tier,
+            entries: [{ id: `${place}-1`, brewer: '', style: '' }]
+          };
+        }
+        return {
+          ...tier,
+          entries: tier.entries.filter((e) => e.id !== entryId)
+        };
+      })
+    );
+  };
 
   const handleSaveFlightStandings = (e: React.FormEvent) => {
     e.preventDefault();
     if (!standingsMonth.trim()) return;
 
-    const placings: MonthlyPlacement[] = [
-      { ...place1, place: 1, points: 10 },
-      { ...place2, place: 2, points: 7 },
-      { ...place3, place: 3, points: 5 },
-      { ...place4, place: 4, points: 3 },
-      { ...place5, place: 5, points: 2 }
-    ].filter((p) => p.brewer.trim() !== '');
+    const placings: MonthlyPlacement[] = [];
+
+    ranks.forEach((tier) => {
+      tier.entries.forEach((entry) => {
+        const rawBrewer = entry.brewer.trim();
+        if (!rawBrewer) return;
+
+        // Support splitting on comma, "&", or "/" if typed together
+        const names = rawBrewer.includes('&') || rawBrewer.includes(',') || rawBrewer.includes(' / ')
+          ? rawBrewer.split(/[,&/]/).map((n) => n.trim()).filter(Boolean)
+          : [rawBrewer];
+
+        names.forEach((name) => {
+          placings.push({
+            place: tier.place,
+            points: tier.points,
+            brewer: name,
+            style: entry.style.trim() || standingsStyle.trim() || 'Monthly Flight'
+          });
+        });
+      });
+    });
 
     if (placings.length === 0) {
-      alert('Please enter at least one brewer for 1st place standings.');
+      alert('Please enter at least one brewer ranking for this flight.');
       return;
     }
 
@@ -200,11 +279,13 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
     showNotification(`Recorded ${standingsMonth} competition standings! Brewer of the Year rankings updated.`);
 
     // Reset inputs
-    setPlace1({ place: 1, points: 10, brewer: '', beerName: '', style: '' });
-    setPlace2({ place: 2, points: 7, brewer: '', beerName: '', style: '' });
-    setPlace3({ place: 3, points: 5, brewer: '', beerName: '', style: '' });
-    setPlace4({ place: 4, points: 3, brewer: '', beerName: '', style: '' });
-    setPlace5({ place: 5, points: 2, brewer: '', beerName: '', style: '' });
+    setRanks([
+      { place: 1, points: 10, label: '1st Place', entries: [{ id: '1-1', brewer: '', style: '' }] },
+      { place: 2, points: 7, label: '2nd Place', entries: [{ id: '2-1', brewer: '', style: '' }] },
+      { place: 3, points: 5, label: '3rd Place', entries: [{ id: '3-1', brewer: '', style: '' }] },
+      { place: 4, points: 3, label: '4th Place', entries: [{ id: '4-1', brewer: '', style: '' }] },
+      { place: 5, points: 2, label: '5th Place', entries: [{ id: '5-1', brewer: '', style: '' }] }
+    ]);
   };
 
   const handleDeleteFlight = (monthName: string) => {
@@ -734,125 +815,87 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                     </div>
                   </div>
 
-                  {/* Placings 1 through 5 */}
-                  <div className="space-y-3 pt-2">
-                    <p className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                      Flight Placings (Points Awarded)
-                    </p>
-
-                    {/* 1st Place */}
-                    <div className="p-3 bg-slate-900/90 border border-amber-500/40 rounded-xl space-y-2">
-                      <div className="flex items-center justify-between text-xs font-bold text-amber-300">
-                        <span className="flex items-center gap-1.5">
-                          <Award className="w-4 h-4 text-amber-400" />
-                          <span>1st Place (10 Points) *</span>
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input
-                          type="text"
-                          required
-                          placeholder="Brewer Name *"
-                          value={place1.brewer}
-                          onChange={(e) => setPlace1({ ...place1, brewer: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Beer Name"
-                          value={place1.beerName}
-                          onChange={(e) => setPlace1({ ...place1, beerName: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Style Specification"
-                          value={place1.style}
-                          onChange={(e) => setPlace1({ ...place1, style: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                      </div>
+                  {/* Placings 1 through 5 - All 5 Ranks Identical & Tie-Enabled */}
+                  <div className="space-y-3.5 pt-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                      <p className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                        Flight Placings (Points Awarded)
+                      </p>
+                      <span className="text-[11px] text-slate-400">
+                        Multiple brewers can share any rank (ties award full points)
+                      </span>
                     </div>
 
-                    {/* 2nd Place */}
-                    <div className="p-3 bg-slate-900/90 border border-slate-700 rounded-xl space-y-2">
-                      <div className="text-xs font-bold text-slate-300">2nd Place (7 Points)</div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input
-                          type="text"
-                          placeholder="Brewer Name"
-                          value={place2.brewer}
-                          onChange={(e) => setPlace2({ ...place2, brewer: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Beer Name"
-                          value={place2.beerName}
-                          onChange={(e) => setPlace2({ ...place2, beerName: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Style Specification"
-                          value={place2.style}
-                          onChange={(e) => setPlace2({ ...place2, style: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                      </div>
-                    </div>
+                    {ranks.map((tier) => (
+                      <div
+                        key={tier.place}
+                        className="p-3.5 bg-slate-900/90 border border-slate-700/80 rounded-xl space-y-2.5 shadow-2xs transition-all"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                              <Award className="w-3.5 h-3.5 text-amber-400" />
+                              <span>{tier.label}</span>
+                            </span>
+                            <span className="text-[11px] font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded border border-amber-400/20">
+                              {tier.points} Points
+                            </span>
+                            {tier.entries.length > 1 && (
+                              <span className="text-[10px] font-bold text-purple-300 bg-purple-900/40 px-2 py-0.5 rounded border border-purple-700/40">
+                                {tier.entries.length}-Way Tie
+                              </span>
+                            )}
+                          </div>
 
-                    {/* 3rd Place */}
-                    <div className="p-3 bg-slate-900/90 border border-slate-700 rounded-xl space-y-2">
-                      <div className="text-xs font-bold text-amber-600/90">3rd Place (5 Points)</div>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                        <input
-                          type="text"
-                          placeholder="Brewer Name"
-                          value={place3.brewer}
-                          onChange={(e) => setPlace3({ ...place3, brewer: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Beer Name"
-                          value={place3.beerName}
-                          onChange={(e) => setPlace3({ ...place3, beerName: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                        <input
-                          type="text"
-                          placeholder="Style Specification"
-                          value={place3.style}
-                          onChange={(e) => setPlace3({ ...place3, style: e.target.value })}
-                          className="px-2.5 py-1.5 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none focus:border-amber-400"
-                        />
-                      </div>
-                    </div>
+                          <button
+                            type="button"
+                            onClick={() => handleAddRankTie(tier.place)}
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-400 hover:text-amber-300 hover:bg-slate-800 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                            title="Add another brewer tied for this rank"
+                          >
+                            <Plus className="w-3 h-3" />
+                            <span>+ Add Tied Brewer</span>
+                          </button>
+                        </div>
 
-                    {/* 4th & 5th Places */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      <div className="p-2.5 bg-slate-900/90 border border-slate-800 rounded-lg space-y-1">
-                        <span className="text-[11px] font-bold text-slate-400">4th Place (3 Points)</span>
-                        <input
-                          type="text"
-                          placeholder="Brewer Name"
-                          value={place4.brewer}
-                          onChange={(e) => setPlace4({ ...place4, brewer: e.target.value })}
-                          className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none"
-                        />
+                        <div className="space-y-2">
+                          {tier.entries.map((entry, eIdx) => (
+                            <div key={entry.id} className="flex items-center gap-2">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 flex-1">
+                                <input
+                                  type="text"
+                                  placeholder={eIdx === 0 && tier.place === 1 ? 'Brewer Name *' : 'Brewer Name'}
+                                  value={entry.brewer}
+                                  onChange={(e) =>
+                                    handleUpdateRankEntry(tier.place, entry.id, 'brewer', e.target.value)
+                                  }
+                                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                                />
+                                <input
+                                  type="text"
+                                  placeholder="Style / Subcategory"
+                                  value={entry.style}
+                                  onChange={(e) =>
+                                    handleUpdateRankEntry(tier.place, entry.id, 'style', e.target.value)
+                                  }
+                                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-amber-400 focus:ring-1 focus:ring-amber-400"
+                                />
+                              </div>
+                              {tier.entries.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveRankTie(tier.place, entry.id)}
+                                  className="p-2 text-slate-500 hover:text-red-400 hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                                  title="Remove this tied brewer"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <div className="p-2.5 bg-slate-900/90 border border-slate-800 rounded-lg space-y-1">
-                        <span className="text-[11px] font-bold text-slate-400">5th Place (2 Points)</span>
-                        <input
-                          type="text"
-                          placeholder="Brewer Name"
-                          value={place5.brewer}
-                          onChange={(e) => setPlace5({ ...place5, brewer: e.target.value })}
-                          className="w-full px-2 py-1 bg-slate-950 border border-slate-700 rounded text-xs text-white focus:outline-none"
-                        />
-                      </div>
-                    </div>
+                    ))}
                   </div>
 
                   <div className="pt-2">
