@@ -179,10 +179,21 @@ export function calculateTopBrewers(archives: MonthArchive[]): TopBrewer[] {
   >();
 
   // Process all monthly archives
-  for (const arc of archives) {
-    for (const s of arc.standings) {
+  for (const arc of archives || []) {
+    for (const s of arc.standings || []) {
       if (!s.brewer || s.brewer.trim() === '') continue;
       const brewer = s.brewer.trim();
+      const placeNum = Number(s.place);
+      const defaultPts =
+        placeNum === 1 ? 10 :
+        placeNum === 2 ? 7 :
+        placeNum === 3 ? 5 :
+        placeNum === 4 ? 3 :
+        placeNum === 5 ? 2 : 0;
+      const pts = typeof s.points === 'number' && !isNaN(s.points) && s.points > 0
+        ? s.points
+        : (Number(s.points) || defaultPts);
+
       const existing = brewerMap.get(brewer) || {
         name: brewer,
         points: 0,
@@ -192,21 +203,21 @@ export function calculateTopBrewers(archives: MonthArchive[]): TopBrewer[] {
         finishes: []
       };
 
-      existing.points += s.points;
-      if (s.place === 1) existing.gold += 1;
-      else if (s.place === 2) existing.silver += 1;
-      else if (s.place === 3) existing.bronze += 1;
+      existing.points += pts;
+      if (placeNum === 1) existing.gold += 1;
+      else if (placeNum === 2) existing.silver += 1;
+      else if (placeNum === 3) existing.bronze += 1;
 
       const placeLabel =
-        s.place === 1 ? '1st Place' :
-        s.place === 2 ? '2nd Place' :
-        s.place === 3 ? '3rd Place' :
-        `${s.place}th Place`;
+        placeNum === 1 ? '1st Place' :
+        placeNum === 2 ? '2nd Place' :
+        placeNum === 3 ? '3rd Place' :
+        `${placeNum}th Place`;
 
       existing.finishes.push({
         month: arc.month,
         place: placeLabel,
-        points: s.points,
+        points: pts,
         beerName: s.beerName || 'Homebrew Entry',
         style: s.style || arc.styleCategory
       });
@@ -217,13 +228,30 @@ export function calculateTopBrewers(archives: MonthArchive[]): TopBrewer[] {
 
   // Sort brewers descending by total points
   const sorted = Array.from(brewerMap.values()).sort((a, b) => {
-    if (b.points !== a.points) return b.points - a.points;
+    const ptsA = Number(a.points) || 0;
+    const ptsB = Number(b.points) || 0;
+    if (ptsB !== ptsA) return ptsB - ptsA;
     if (b.gold !== a.gold) return b.gold - a.gold;
     if (b.silver !== a.silver) return b.silver - a.silver;
     return b.bronze - a.bronze;
   });
 
-  return sorted.slice(0, 10).map((b, idx) => {
+  let currentRank = 1;
+  return sorted.slice(0, 10).map((b, idx, arr) => {
+    if (idx > 0) {
+      const prev = arr[idx - 1];
+      const isTied =
+        prev.points === b.points &&
+        prev.gold === b.gold &&
+        prev.silver === b.silver &&
+        prev.bronze === b.bronze;
+      if (!isTied) {
+        currentRank = idx + 1;
+      }
+    } else {
+      currentRank = 1;
+    }
+
     const medalsList: string[] = [];
     if (b.gold > 0) medalsList.push(`${b.gold} Gold`);
     if (b.silver > 0) medalsList.push(`${b.silver} Silver`);
@@ -238,7 +266,7 @@ export function calculateTopBrewers(archives: MonthArchive[]): TopBrewer[] {
       : 'Homebrew Entry';
 
     return {
-      rank: idx + 1,
+      rank: currentRank,
       name: b.name,
       points: b.points,
       medals,

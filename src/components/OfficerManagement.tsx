@@ -40,12 +40,16 @@ interface OfficerManagementProps {
   onBackToSite: () => void;
   roster: MemberRegistration[];
   onUpdateRoster: (newRoster: MemberRegistration[]) => void;
+  competitionResults?: MonthArchive[];
+  onUpdateCompetitionResults?: (newResults: MonthArchive[]) => void;
 }
 
 export const OfficerManagement: React.FC<OfficerManagementProps> = ({
   onBackToSite,
   roster,
-  onUpdateRoster
+  onUpdateRoster,
+  competitionResults: propCompetitionResults,
+  onUpdateCompetitionResults
 }) => {
   const [activeTab, setActiveTab] = useState<'minutes' | 'standings' | 'roster' | 'vault'>('minutes');
   const [notification, setNotification] = useState<string | null>(null);
@@ -128,6 +132,9 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
   // 2. BREWER STANDINGS STATE & ACTIONS
   // ==========================================
   const [competitionResults, setCompetitionResults] = useState<MonthArchive[]>(() => {
+    if (propCompetitionResults && propCompetitionResults.length > 0) {
+      return propCompetitionResults;
+    }
     try {
       const stored = localStorage.getItem('crabs_competition_standings_v1');
       if (stored) return JSON.parse(stored);
@@ -135,8 +142,17 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
     return DEFAULT_MONTHLY_RESULTS;
   });
 
+  useEffect(() => {
+    if (propCompetitionResults) {
+      setCompetitionResults(propCompetitionResults);
+    }
+  }, [propCompetitionResults]);
+
   const saveStandings = (updated: MonthArchive[]) => {
     setCompetitionResults(updated);
+    if (onUpdateCompetitionResults) {
+      onUpdateCompetitionResults(updated);
+    }
     try {
       localStorage.setItem('crabs_competition_standings_v1', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-standings-updated'));

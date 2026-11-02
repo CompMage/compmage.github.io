@@ -10,6 +10,7 @@ import { OfficerRosterModal } from './components/OfficerRosterModal';
 import { OfficerManagement } from './components/OfficerManagement';
 import { Footer } from './components/Footer';
 import { MemberRegistration } from './types';
+import { DEFAULT_MONTHLY_RESULTS, MonthArchive } from './data/competitionStandings';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'site' | 'officers'>(() => {
@@ -18,6 +19,25 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('about');
   const [isOfficerModalOpen, setIsOfficerModalOpen] = useState<boolean>(false);
   const [roster, setRoster] = useState<MemberRegistration[]>([]);
+
+  // Persistent competition results hoisted to root for live synchronization
+  const [competitionResults, setCompetitionResults] = useState<MonthArchive[]>(() => {
+    try {
+      const stored = localStorage.getItem('crabs_competition_standings_v1');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return DEFAULT_MONTHLY_RESULTS;
+  });
+
+  const handleUpdateCompetitionResults = (updated: MonthArchive[]) => {
+    setCompetitionResults(updated);
+    try {
+      localStorage.setItem('crabs_competition_standings_v1', JSON.stringify(updated));
+      window.dispatchEvent(new Event('crabs-standings-updated'));
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   // Hash listener for direct navigation / bookmarks
   useEffect(() => {
@@ -135,6 +155,8 @@ export default function App() {
         onBackToSite={returnToSite}
         roster={roster}
         onUpdateRoster={setRoster}
+        competitionResults={competitionResults}
+        onUpdateCompetitionResults={handleUpdateCompetitionResults}
       />
     );
   }
@@ -159,7 +181,7 @@ export default function App() {
 
         <AboutMeetings />
 
-        <CompetitionSchedule />
+        <CompetitionSchedule competitionResults={competitionResults} />
 
         <JoinSection
           onMemberRegistered={handleMemberRegistered}

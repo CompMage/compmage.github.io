@@ -19,7 +19,13 @@ interface MonthlyComp {
   isCurrentMonth?: boolean;
 }
 
-export const CompetitionSchedule: React.FC = () => {
+interface CompetitionScheduleProps {
+  competitionResults?: MonthArchive[];
+}
+
+export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
+  competitionResults: propResults
+}) => {
   // Toggle between 'this-month' and 'full-year'
   const [scheduleView, setScheduleView] = useState<'this-month' | 'full-year'>('this-month');
   const [selectedQuarter, setSelectedQuarter] = useState<string>('all');
@@ -191,11 +197,12 @@ export const CompetitionSchedule: React.FC = () => {
   const [standingsTab, setStandingsTab] = useState<'top5' | 'monthly' | 'points'>('top5');
   // Standings are collapsed on load as requested
   const [isStandingsExpanded, setIsStandingsExpanded] = useState<boolean>(false);
-  const [expandedBrewerRank, setExpandedBrewerRank] = useState<number | null>(null);
+  const [expandedBrewerName, setExpandedBrewerName] = useState<string | null>(null);
   const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('all');
 
   // Dynamic monthly results and Top 5 Standings synced with Officer Portal
-  const [monthlyResults, setMonthlyResults] = useState<MonthArchive[]>(() => {
+  const [internalMonthlyResults, setInternalMonthlyResults] = useState<MonthArchive[]>(() => {
+    if (propResults && propResults.length > 0) return propResults;
     try {
       const stored = localStorage.getItem('crabs_competition_standings_v1');
       if (stored) return JSON.parse(stored);
@@ -204,10 +211,16 @@ export const CompetitionSchedule: React.FC = () => {
   });
 
   useEffect(() => {
+    if (propResults) {
+      setInternalMonthlyResults(propResults);
+    }
+  }, [propResults]);
+
+  useEffect(() => {
     const handleSync = () => {
       try {
         const stored = localStorage.getItem('crabs_competition_standings_v1');
-        if (stored) setMonthlyResults(JSON.parse(stored));
+        if (stored) setInternalMonthlyResults(JSON.parse(stored));
       } catch {}
     };
     window.addEventListener('storage', handleSync);
@@ -218,7 +231,19 @@ export const CompetitionSchedule: React.FC = () => {
     };
   }, []);
 
+  const monthlyResults = propResults || internalMonthlyResults;
   const currentTop5 = calculateTopBrewers(monthlyResults);
+
+  // Dynamically compute the active season leader(s) directly from current calculated points
+  const topBrewer = currentTop5 && currentTop5.length > 0 ? currentTop5[0] : null;
+  const tiedForFirst = topBrewer
+    ? currentTop5.filter((b) => Number(b.points) === Number(topBrewer.points))
+    : [];
+  const activeLeaderBadge = !topBrewer
+    ? 'No Standings Recorded'
+    : tiedForFirst.length > 1
+    ? `Active Leaders (Tie): ${tiedForFirst.map((b) => b.name).join(' & ')} (${topBrewer.points} pts)`
+    : `Active Leader: ${topBrewer.name} (${topBrewer.points} pts)`;
 
   return (
     <section id="competitions" className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200">
@@ -461,7 +486,7 @@ export const CompetitionSchedule: React.FC = () => {
                       Section 4: Standings
                     </span>
                     <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
-                      Active Leader: Justin Wilson (59 pts)
+                      {activeLeaderBadge}
                     </span>
                   </div>
                   <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -584,12 +609,12 @@ export const CompetitionSchedule: React.FC = () => {
                     </div>
 
                     <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
-                      {currentTop5.map((brewer) => {
-                        const isExpanded = expandedBrewerRank === brewer.rank;
+                      {currentTop5.map((brewer, bIdx) => {
+                        const isExpanded = expandedBrewerName === brewer.name;
                         return (
-                          <div key={brewer.rank} className="bg-white hover:bg-slate-50/50 transition-colors">
+                          <div key={`${brewer.rank}-${brewer.name}-${bIdx}`} className="bg-white hover:bg-slate-50/50 transition-colors">
                             <div
-                              onClick={() => setExpandedBrewerRank(isExpanded ? null : brewer.rank)}
+                              onClick={() => setExpandedBrewerName(isExpanded ? null : brewer.name)}
                               className="p-4 flex items-center justify-between cursor-pointer gap-3"
                             >
                               <div className="flex items-center gap-3">
