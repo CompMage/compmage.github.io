@@ -136,14 +136,13 @@ export const AboutMeetings: React.FC = () => {
                       🏆 7:45 PM: Competition & Bottle Share
                     </span>
                   </div>
+
+                  <div className="pt-2.5 mt-2 border-t border-slate-200/80 flex items-start gap-2 text-xs sm:text-sm text-slate-600">
+                    <span className="font-semibold text-red-600 shrink-0">Tip:</span>
+                    <span>Feel free to bring 2–3 bottles or growlers of your latest homebrew or commercial inspiration!</span>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            <div className="pt-5 mt-6 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-xs sm:text-sm font-medium text-slate-500">
-                Tip: Feel free to bring 2–3 bottles or growlers of your latest homebrew or commercial inspiration!
-              </span>
             </div>
           </div>
 

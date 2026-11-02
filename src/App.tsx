@@ -20,10 +20,11 @@ export default function App() {
   const [isOfficerModalOpen, setIsOfficerModalOpen] = useState<boolean>(false);
   const [roster, setRoster] = useState<MemberRegistration[]>([]);
 
-  // Persistent competition results hoisted to root for live synchronization
+  // Persistent competition results hoisted to root for live synchronization (reset for active season)
   const [competitionResults, setCompetitionResults] = useState<MonthArchive[]>(() => {
     try {
-      const stored = localStorage.getItem('crabs_competition_standings_v1');
+      localStorage.removeItem('crabs_competition_standings_v1'); // purge stale mock standings
+      const stored = localStorage.getItem('crabs_competition_standings_v2');
       if (stored) return JSON.parse(stored);
     } catch {}
     return DEFAULT_MONTHLY_RESULTS;
@@ -32,7 +33,7 @@ export default function App() {
   const handleUpdateCompetitionResults = (updated: MonthArchive[]) => {
     setCompetitionResults(updated);
     try {
-      localStorage.setItem('crabs_competition_standings_v1', JSON.stringify(updated));
+      localStorage.setItem('crabs_competition_standings_v2', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-standings-updated'));
     } catch (e) {
       console.error(e);

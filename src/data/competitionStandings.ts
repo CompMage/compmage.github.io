@@ -30,7 +30,10 @@ export interface TopBrewer {
   }[];
 }
 
-export const DEFAULT_MONTHLY_RESULTS: MonthArchive[] = [
+// Reset current standings for active club competition tracking
+export const DEFAULT_MONTHLY_RESULTS: MonthArchive[] = [];
+
+export const HISTORICAL_MOCK_RESULTS: MonthArchive[] = [
   {
     month: 'January',
     monthNumber: 1,

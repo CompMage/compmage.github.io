@@ -80,24 +80,19 @@ export const MeetingMinutes: React.FC = () => {
         
         {/* Header Bar */}
         <div className="p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="p-2.5 bg-red-50 text-red-600 rounded-xl shrink-0 mt-0.5 sm:mt-0">
-              <FileText className="w-6 h-6" />
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
+                <FileText className="w-3.5 h-3.5 text-red-600" />
+                <span>Club Records & Minutes</span>
+              </span>
             </div>
-            <div className="space-y-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
-                  <FileText className="w-3.5 h-3.5 text-red-600" />
-                  <span>Club Records & Minutes</span>
-                </span>
-              </div>
-              <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                C.R.A.B.S. Meeting Minutes
-              </h3>
-              <p className="text-xs sm:text-sm text-slate-500">
-                Monthly gathering notes, announcements, competition results, and technical presentations.
-              </p>
-            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              C.R.A.B.S. Meeting Minutes
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500">
+              Monthly gathering notes, announcements, competition results, and technical presentations.
+            </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5 shrink-0">

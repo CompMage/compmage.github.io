@@ -160,8 +160,7 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
         '3 C-D: Czech Amber & Dark Lagers',
         '6 A-C: Amber Malty European Lager',
         '8 A-B: Dark European Lager'
-      ],
-      isCurrentMonth: true
+      ]
     },
     {
       month: 'November',
@@ -175,7 +174,8 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
         '15 B-C: Irish Stout',
         '16 A-D: Dark British Beer',
         '20 A-B (no C): American Porter and Stout'
-      ]
+      ],
+      isCurrentMonth: true
     },
     {
       month: 'December',
@@ -191,7 +191,7 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
     }
   ];
 
-  const currentMonthComp = annualSchedule.find((m) => m.isCurrentMonth) || annualSchedule[9];
+  const currentMonthComp = annualSchedule.find((m) => m.isCurrentMonth) || annualSchedule[10];
 
   // State for Section 4 standings view (Top 5 vs Monthly Standings Breakout vs Brewer of the Year Points System)
   const [standingsTab, setStandingsTab] = useState<'top5' | 'monthly' | 'points'>('top5');
@@ -204,7 +204,8 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
   const [internalMonthlyResults, setInternalMonthlyResults] = useState<MonthArchive[]>(() => {
     if (propResults && propResults.length > 0) return propResults;
     try {
-      const stored = localStorage.getItem('crabs_competition_standings_v1');
+      localStorage.removeItem('crabs_competition_standings_v1');
+      const stored = localStorage.getItem('crabs_competition_standings_v2');
       if (stored) return JSON.parse(stored);
     } catch {}
     return DEFAULT_MONTHLY_RESULTS;
@@ -219,7 +220,7 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
   useEffect(() => {
     const handleSync = () => {
       try {
-        const stored = localStorage.getItem('crabs_competition_standings_v1');
+        const stored = localStorage.getItem('crabs_competition_standings_v2');
         if (stored) setInternalMonthlyResults(JSON.parse(stored));
       } catch {}
     };
@@ -240,7 +241,7 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
     ? currentTop5.filter((b) => Number(b.points) === Number(topBrewer.points))
     : [];
   const activeLeaderBadge = !topBrewer
-    ? 'No Standings Recorded'
+    ? 'Standings Reset (0 pts)'
     : tiedForFirst.length > 1
     ? `Active Leaders (Tie): ${tiedForFirst.map((b) => b.name).join(' & ')} (${topBrewer.points} pts)`
     : `Active Leader: ${topBrewer.name} (${topBrewer.points} pts)`;
@@ -371,16 +372,16 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
                     Coming Next Month
                   </span>
                   <h4 className="text-xl font-bold tracking-tight text-white">
-                    November: Porters & Stouts
+                    December: Holiday Party & Annual Gathering
                   </h4>
                   <p className="text-xs text-slate-300 leading-relaxed">
-                    Get ready for rich, roasty winter brews! Eligible categories include 13C English Porter, 15B-C Irish Stout, 16A-D Dark British Beer, and 20A-B American Porter & Stout.
+                    Year-end C.R.A.B.S. celebration featuring a festive potluck, holiday brews, and the official crowning of the 2026 Brewer of the Year!
                   </p>
                 </div>
 
                 <div className="pt-4 mt-4 border-t border-slate-700/60 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-mono">Nov 18, 2026</span>
-                  <span className="text-amber-400 font-mono font-bold">BJCP 13C, 15B-C, 16A-D, 20A-B</span>
+                  <span className="text-slate-400 font-mono">Dec 16, 2026</span>
+                  <span className="text-amber-400 font-mono font-bold">Annual Club Celebration</span>
                 </div>
               </div>
 
@@ -610,7 +611,16 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
                     </div>
 
                     <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
-                      {currentTop5.map((brewer, bIdx) => {
+                      {currentTop5.length === 0 ? (
+                        <div className="p-8 text-center space-y-2">
+                          <Trophy className="w-8 h-8 text-amber-500/50 mx-auto" />
+                          <p className="text-sm font-bold text-slate-800">Current Standings Reset (0 pts)</p>
+                          <p className="text-xs text-slate-500 max-w-md mx-auto">
+                            The competition leaderboard has been reset for the season. As flight placements are entered by club officers, rankings and point tallies will automatically appear here.
+                          </p>
+                        </div>
+                      ) : (
+                        currentTop5.map((brewer, bIdx) => {
                         const isExpanded = expandedBrewerName === brewer.name;
                         return (
                           <div key={`${brewer.rank}-${brewer.name}-${bIdx}`} className="bg-white hover:bg-slate-50/50 transition-colors">
@@ -689,7 +699,7 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
                             )}
                           </div>
                         );
-                      })}
+                      }))}
                     </div>
 
                     <div className="flex items-center justify-between pt-1 text-xs">
@@ -736,69 +746,79 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
                     </div>
 
                     {/* Monthly Results Flights */}
-                    <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
-                      {monthlyResults
-                        .filter((m) => selectedMonthFilter === 'all' || selectedMonthFilter === m.month)
-                        .map((flight) => (
-                          <div key={flight.month} className="border border-slate-200 rounded-xl p-4 bg-white shadow-2xs space-y-3">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-slate-100">
-                              <div>
-                                <span className="text-xs font-bold uppercase tracking-wider text-red-600">
-                                  {flight.month} 2026 Competition
-                                </span>
-                                <h4 className="text-sm font-bold text-slate-900">
-                                  {flight.styleCategory}
-                                </h4>
+                    {monthlyResults.length === 0 ? (
+                      <div className="p-8 text-center border border-slate-200 rounded-xl bg-white space-y-2">
+                        <Calendar className="w-8 h-8 text-slate-300 mx-auto" />
+                        <p className="text-sm font-bold text-slate-800">No Monthly Flights Recorded Yet</p>
+                        <p className="text-xs text-slate-500 max-w-md mx-auto">
+                          Monthly competition placings and flight entries will appear here once recorded by club officers in the management desk.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4 max-h-[480px] overflow-y-auto pr-1">
+                        {monthlyResults
+                          .filter((m) => selectedMonthFilter === 'all' || selectedMonthFilter === m.month)
+                          .map((flight) => (
+                            <div key={flight.month} className="border border-slate-200 rounded-xl p-4 bg-white shadow-2xs space-y-3">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-slate-100">
+                                <div>
+                                  <span className="text-xs font-bold uppercase tracking-wider text-red-600">
+                                    {flight.month} 2026 Competition
+                                  </span>
+                                  <h4 className="text-sm font-bold text-slate-900">
+                                    {flight.styleCategory}
+                                  </h4>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs">
+                                  <span className="text-slate-500 font-mono text-[11px]">{flight.bjcpCode}</span>
+                                  <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-mono font-bold">
+                                    {flight.entriesCount} entries
+                                  </span>
+                                </div>
                               </div>
-                              <div className="flex items-center gap-2 text-xs">
-                                <span className="text-slate-500 font-mono text-[11px]">{flight.bjcpCode}</span>
-                                <span className="bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-mono font-bold">
-                                  {flight.entriesCount} entries
-                                </span>
-                              </div>
-                            </div>
 
-                            {/* Placements Table for This Month */}
-                            <div className="overflow-x-auto">
-                              <table className="w-full text-xs text-left">
-                                <thead className="text-[10px] uppercase text-slate-400">
-                                  <tr>
-                                    <th className="py-1">Place</th>
-                                    <th className="py-1">Points</th>
-                                    <th className="py-1">Brewer</th>
-                                    <th className="py-1">Style / Subcategory</th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 bg-white rounded-lg">
-                                  {flight.standings.map((s, sIdx) => (
-                                    <tr key={`${s.place}-${s.brewer}-${sIdx}`} className="hover:bg-slate-50">
-                                      <td className="py-2 px-2 font-bold font-mono">
-                                        {s.place === 1 ? '🥇 1st' : s.place === 2 ? '🥈 2nd' : s.place === 3 ? '🥉 3rd' : `${s.place}th`}
-                                      </td>
-                                      <td className="py-2 px-2 font-mono font-extrabold text-red-600">
-                                        {s.points} pts
-                                      </td>
-                                      <td className="py-2 px-2 font-bold text-slate-900 whitespace-nowrap">
-                                        {s.brewer}
-                                      </td>
-                                      <td className="py-2 px-2 text-slate-600">
-                                        {s.beerName && s.beerName !== 'Homebrew Entry' ? (
-                                          <>
-                                            <span className="font-semibold text-slate-800">{s.beerName}</span>
-                                            <span className="text-[10px] text-slate-500 block">{s.style}</span>
-                                          </>
-                                        ) : (
-                                          <span className="font-semibold text-slate-800">{s.style}</span>
-                                        )}
-                                      </td>
+                              {/* Placements Table for This Month */}
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-xs text-left">
+                                  <thead className="text-[10px] uppercase text-slate-400">
+                                    <tr>
+                                      <th className="py-1">Place</th>
+                                      <th className="py-1">Points</th>
+                                      <th className="py-1">Brewer</th>
+                                      <th className="py-1">Style / Subcategory</th>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-100 bg-white rounded-lg">
+                                    {flight.standings.map((s, sIdx) => (
+                                      <tr key={`${s.place}-${s.brewer}-${sIdx}`} className="hover:bg-slate-50">
+                                        <td className="py-2 px-2 font-bold font-mono">
+                                          {s.place === 1 ? '🥇 1st' : s.place === 2 ? '🥈 2nd' : s.place === 3 ? '🥉 3rd' : `${s.place}th`}
+                                        </td>
+                                        <td className="py-2 px-2 font-mono font-extrabold text-red-600">
+                                          {s.points} pts
+                                        </td>
+                                        <td className="py-2 px-2 font-bold text-slate-900 whitespace-nowrap">
+                                          {s.brewer}
+                                        </td>
+                                        <td className="py-2 px-2 text-slate-600">
+                                          {s.beerName && s.beerName !== 'Homebrew Entry' ? (
+                                            <>
+                                              <span className="font-semibold text-slate-800">{s.beerName}</span>
+                                              <span className="text-[10px] text-slate-500 block">{s.style}</span>
+                                            </>
+                                          ) : (
+                                            <span className="font-semibold text-slate-800">{s.style}</span>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
                             </div>
-                          </div>
-                        ))}
-                    </div>
+                          ))}
+                      </div>
+                    )}
 
                     <div className="pt-2">
                       <button

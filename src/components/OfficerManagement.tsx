@@ -136,7 +136,8 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
       return propCompetitionResults;
     }
     try {
-      const stored = localStorage.getItem('crabs_competition_standings_v1');
+      localStorage.removeItem('crabs_competition_standings_v1');
+      const stored = localStorage.getItem('crabs_competition_standings_v2');
       if (stored) return JSON.parse(stored);
     } catch {}
     return DEFAULT_MONTHLY_RESULTS;
@@ -154,17 +155,24 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
       onUpdateCompetitionResults(updated);
     }
     try {
-      localStorage.setItem('crabs_competition_standings_v1', JSON.stringify(updated));
+      localStorage.setItem('crabs_competition_standings_v2', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-standings-updated'));
     } catch (e) {
       console.error(e);
     }
   };
 
+  const handleResetAllStandings = () => {
+    if (window.confirm('Are you sure you want to reset all competition standings? This will clear all recorded placements and reset the season leaderboard to 0 points.')) {
+      saveStandings([]);
+      showNotification('All competition standings have been reset.');
+    }
+  };
+
   // Standings input form state
   const [standingsMonth, setStandingsMonth] = useState<string>('November');
-  const [standingsStyle, setStandingsStyle] = useState<string>('Stouts & Porters');
-  const [standingsBjcp, setStandingsBjcp] = useState<string>('BJCP 15A-C, 16A-D');
+  const [standingsStyle, setStandingsStyle] = useState<string>('Porters & Stouts');
+  const [standingsBjcp, setStandingsBjcp] = useState<string>('BJCP 13C, 15B-C, 16A-D, 20A-B');
   const [standingsEntriesCount, setStandingsEntriesCount] = useState<number>(14);
 
   interface RankEntry {
@@ -943,35 +951,41 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                   </div>
 
                   <div className="space-y-2.5">
-                    {currentTopBrewers.slice(0, 5).map((b) => (
-                      <div
-                        key={b.name}
-                        className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
-                              b.rank === 1
-                                ? 'bg-amber-500 text-slate-950'
-                                : b.rank === 2
-                                ? 'bg-slate-300 text-slate-950'
-                                : b.rank === 3
-                                ? 'bg-amber-700 text-white'
-                                : 'bg-slate-800 text-slate-400'
-                            }`}
-                          >
-                            {b.rank}
-                          </span>
-                          <div>
-                            <p className="text-xs font-bold text-white">{b.name}</p>
-                            <p className="text-[10px] text-slate-400">{b.medals}</p>
-                          </div>
-                        </div>
-                        <span className="text-xs font-black font-mono text-amber-400">
-                          {b.points} pts
-                        </span>
+                    {currentTopBrewers.length === 0 ? (
+                      <div className="p-4 text-center text-xs text-slate-400 bg-slate-900 rounded-xl border border-slate-800">
+                        Standings reset. Enter monthly flight placings to compute leaderboard.
                       </div>
-                    ))}
+                    ) : (
+                      currentTopBrewers.slice(0, 5).map((b) => (
+                        <div
+                          key={b.name}
+                          className="flex items-center justify-between p-3 bg-slate-900 rounded-xl border border-slate-800"
+                        >
+                          <div className="flex items-center gap-3">
+                            <span
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-black ${
+                                b.rank === 1
+                                  ? 'bg-amber-500 text-slate-950'
+                                  : b.rank === 2
+                                  ? 'bg-slate-300 text-slate-950'
+                                  : b.rank === 3
+                                  ? 'bg-amber-700 text-white'
+                                  : 'bg-slate-800 text-slate-400'
+                              }`}
+                            >
+                              {b.rank}
+                            </span>
+                            <div>
+                              <p className="text-xs font-bold text-white">{b.name}</p>
+                              <p className="text-[10px] text-slate-400">{b.medals}</p>
+                            </div>
+                          </div>
+                          <span className="text-xs font-black font-mono text-amber-400">
+                            {b.points} pts
+                          </span>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
 
@@ -981,27 +995,44 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                     <h3 className="text-sm font-bold text-white">
                       Recorded Flights ({competitionResults.length})
                     </h3>
+                    {competitionResults.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleResetAllStandings}
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-red-400 hover:text-red-300 hover:bg-red-950/40 px-2 py-1 rounded transition-colors cursor-pointer"
+                        title="Reset all competition standings"
+                      >
+                        <RefreshCw className="w-3 h-3" />
+                        <span>Reset All</span>
+                      </button>
+                    )}
                   </div>
 
                   <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                    {competitionResults.map((m) => (
-                      <div
-                        key={m.month}
-                        className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg text-xs border border-slate-800"
-                      >
-                        <div>
-                          <strong className="text-white block">{m.month}</strong>
-                          <span className="text-slate-400 text-[11px]">{m.styleCategory}</span>
-                        </div>
-                        <button
-                          onClick={() => handleDeleteFlight(m.month)}
-                          className="text-red-400 hover:text-red-300 p-1.5 hover:bg-red-950/40 rounded transition-colors cursor-pointer"
-                          title={`Delete ${m.month} standings`}
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                    {competitionResults.length === 0 ? (
+                      <div className="p-4 text-center text-xs text-slate-400 bg-slate-900 rounded-lg border border-slate-800">
+                        Standings reset. No competition flights recorded yet.
                       </div>
-                    ))}
+                    ) : (
+                      competitionResults.map((m) => (
+                        <div
+                          key={m.month}
+                          className="flex items-center justify-between p-2.5 bg-slate-900 rounded-lg text-xs border border-slate-800"
+                        >
+                          <div>
+                            <strong className="text-white block">{m.month}</strong>
+                            <span className="text-slate-400 text-[11px]">{m.styleCategory}</span>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteFlight(m.month)}
+                            className="text-red-400 hover:text-red-300 p-1.5 hover:bg-red-950/40 rounded transition-colors cursor-pointer"
+                            title={`Delete ${m.month} standings`}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </div>
               </div>
