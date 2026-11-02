@@ -86,11 +86,9 @@ export const MeetingMinutes: React.FC = () => {
             </div>
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 px-2.5 py-0.5 rounded-full border border-red-200/60">
-                  Club Records & Minutes
-                </span>
-                <span className="text-xs font-mono font-medium text-slate-500">
-                  Simple Notes Archive
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
+                  <FileText className="w-3.5 h-3.5 text-red-600" />
+                  <span>Club Records & Minutes</span>
                 </span>
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">

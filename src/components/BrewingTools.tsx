@@ -117,9 +117,12 @@ export const BrewingTools: React.FC = () => {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
           <div className="space-y-3 max-w-2xl">
-            <p className="text-xs font-bold tracking-widest uppercase text-red-600">
-              Club Brewhouse Utilities
-            </p>
+            <div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
+                <Calculator className="w-3.5 h-3.5 text-red-600" />
+                <span>Club Brewhouse Utilities</span>
+              </span>
+            </div>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               Brewing Calculators & Reference
             </h2>

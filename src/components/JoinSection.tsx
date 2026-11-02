@@ -191,9 +191,12 @@ export const JoinSection: React.FC<JoinSectionProps> = ({ onMemberRegistered }) 
         
         {/* Section Header */}
         <div className="text-center max-w-2xl mx-auto space-y-3 mb-12">
-          <p className="text-xs font-bold tracking-widest uppercase text-red-600">
-            Membership Registration
-          </p>
+          <div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
+              <Users className="w-3.5 h-3.5 text-red-600" />
+              <span>Membership Registration</span>
+            </span>
+          </div>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Join C.R.A.B.S. Today
           </h2>

@@ -8,10 +8,11 @@ export const AboutMeetings: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
         {/* Section Header */}
-        <div className="max-w-3xl space-y-4">
-          <p className="text-xs font-bold tracking-widest uppercase text-red-600">
-            About the Club
-          </p>
+        <div className="max-w-3xl space-y-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
+            <Beer className="w-3.5 h-3.5 text-red-600" />
+            <span>About the Club</span>
+          </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
             Real Ale, Fostering Craft Brewing in Maryland
           </h2>
@@ -61,11 +62,12 @@ export const AboutMeetings: React.FC = () => {
           {/* Meeting Details Card */}
           <div className="lg:col-span-7 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm flex flex-col justify-between">
             <div className="space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <span className="text-xs font-bold uppercase tracking-wider text-red-600 bg-red-50 px-2.5 py-1 rounded">
-                  Regular Meeting Schedule
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-4 border-b border-slate-100">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
+                  <Calendar className="w-3.5 h-3.5 text-red-600" />
+                  <span>Regular Meeting Schedule</span>
                 </span>
-                <span className="text-xs font-mono text-slate-500">Every 3rd Wednesday</span>
+                <span className="text-xs font-mono font-medium text-slate-500">Every 3rd Wednesday</span>
               </div>
 
               <div className="space-y-2">
@@ -78,10 +80,13 @@ export const AboutMeetings: React.FC = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-1.5 sm:col-span-2">
+              <div className="grid grid-cols-1 gap-4 pt-2">
+                {/* Meeting Location */}
+                <div className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-500 uppercase">Meeting Location</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Meeting Location
+                    </span>
                     <a
                       href="https://www.google.com/maps/search/?api=1&query=Heavy+Seas+Beer+4615+Hollins+Ferry+Rd+Halethorpe+MD+21227"
                       target="_blank"
@@ -93,39 +98,52 @@ export const AboutMeetings: React.FC = () => {
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   </div>
-                  <p className="text-sm sm:text-base font-bold text-slate-900">
+                  <p className="text-base sm:text-lg font-bold text-slate-900">
                     Heavy Seas Brewery
                   </p>
-                  <p className="text-xs sm:text-sm text-slate-600">
+                  <p className="text-sm text-slate-600 leading-relaxed">
                     Join us in the taproom; ask the bartender for directions to the club gathering area.
                   </p>
-                  <p className="text-xs text-slate-500 font-mono pt-1">
+                  <p className="text-xs text-slate-500 font-mono">
                     4615 Hollins Ferry Rd, Halethorpe, MD 21227
                   </p>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-1 sm:col-span-2">
-                  <span className="text-xs font-bold text-slate-500 uppercase">Typical Meeting Agenda</span>
-                  <p className="text-sm font-semibold text-slate-900">Monthly Competition Flight & Bottle Share</p>
-                  <p className="text-xs text-slate-600">Officer announcements, educational presentation, and member homebrew bottle sampling.</p>
+                {/* Typical Meeting Agenda */}
+                <div className="p-5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      Typical Meeting Agenda
+                    </span>
+                    <span className="text-xs font-mono font-semibold text-slate-500">
+                      7:00 PM – ~9:30 PM
+                    </span>
+                  </div>
+                  <p className="text-base sm:text-lg font-bold text-slate-900">
+                    Monthly Competition & Bottle Share
+                  </p>
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    Officer announcements, educational brewing presentation, constructive BJCP-aligned monthly competition flight judging, and open member homebrew bottle sampling.
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700">
+                      ⏱️ 7:00 PM: Announcements
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700">
+                      🎓 7:15 PM: Education & Style Focus
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700">
+                      🏆 7:45 PM: Competition & Bottle Share
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-6 mt-6 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
-              <span className="text-[13px] leading-[16px] font-bold text-slate-500">
-                Tip: Feel free to bring 2-3 bottles of your latest homebrew or commercial inspiration!
+            <div className="pt-5 mt-6 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-xs sm:text-sm font-medium text-slate-500">
+                Tip: Feel free to bring 2–3 bottles or growlers of your latest homebrew or commercial inspiration!
               </span>
-              <a
-                href="https://www.google.com/maps/search/?api=1&query=Heavy+Seas+Beer+4615+Hollins+Ferry+Rd+Halethorpe+MD+21227"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 hover:underline"
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Heavy Seas on Google Maps</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
             </div>
           </div>
 
@@ -233,10 +251,11 @@ export const AboutMeetings: React.FC = () => {
         {/* Club Officers & Leadership */}
         <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div>
-              <p className="text-xs font-bold tracking-widest uppercase text-red-600">
-                Club Leadership
-              </p>
+            <div className="space-y-1.5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
+                <Users className="w-3.5 h-3.5 text-red-600" />
+                <span>Club Leadership</span>
+              </span>
               <h3 className="text-xl sm:text-2xl font-bold text-slate-900">
                 Current C.R.A.B.S. Officers
               </h3>

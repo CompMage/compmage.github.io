@@ -252,10 +252,10 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
         {/* Section Header with Interactive Toggle Switch */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-slate-200">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-red-50 text-red-700 text-xs font-bold uppercase tracking-wider">
-              <Trophy className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
+              <Trophy className="w-3.5 h-3.5 text-red-600" />
               <span>C.R.A.B.S. Homebrew Competitions</span>
-            </div>
+            </span>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
               Competition Schedule & Standings
             </h2>
@@ -482,8 +482,9 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
                 </div>
                 <div className="space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/60">
-                      Section 4: Standings
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80">
+                      <Trophy className="w-3.5 h-3.5 text-amber-600" />
+                      <span>Section 4: Standings</span>
                     </span>
                     <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
                       {activeLeaderBadge}
