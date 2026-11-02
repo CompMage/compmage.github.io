@@ -125,16 +125,31 @@ export const AboutMeetings: React.FC = () => {
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Officer announcements, educational brewing presentation, constructive BJCP-aligned monthly competition flight judging, and open member homebrew bottle sampling.
                   </p>
-                  <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700">
-                      ⏱️ 7:00 PM: Announcements
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700">
-                      🎓 7:15 PM: Education & Style Focus
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-white border border-slate-200 font-medium text-slate-700">
-                      🏆 7:45 PM: Competition & Bottle Share
-                    </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-xs">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs">
+                      <span className="font-mono font-bold text-red-600 shrink-0">7:00 PM</span>
+                      <span className="font-medium text-slate-800">Meeting Opens</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs">
+                      <span className="font-mono font-bold text-red-600 shrink-0">7:15 PM</span>
+                      <span className="font-medium text-slate-800">Competition Sign up Opens</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs">
+                      <span className="font-mono font-bold text-red-600 shrink-0">7:30 PM</span>
+                      <span className="font-medium text-slate-800">Club Announcements</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs">
+                      <span className="font-mono font-bold text-red-600 shrink-0">7:45 PM</span>
+                      <span className="font-medium text-slate-800">Competition Sampling and Judging</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs">
+                      <span className="font-mono font-bold text-red-600 shrink-0">8:30 PM</span>
+                      <span className="font-medium text-slate-800">Competition Winners Announcements</span>
+                    </div>
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs">
+                      <span className="font-mono font-bold text-red-600 shrink-0">9:00 PM</span>
+                      <span className="font-medium text-slate-800">Clean up, move the fun to the tap room</span>
+                    </div>
                   </div>
 
                   <div className="pt-2.5 mt-2 border-t border-slate-200/80 flex items-start gap-2 text-xs sm:text-sm text-slate-600">
