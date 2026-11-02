@@ -6,6 +6,7 @@ import { CompetitionSchedule } from './components/CompetitionSchedule';
 import { JoinSection } from './components/JoinSection';
 import { BrewingTools } from './components/BrewingTools';
 import { RecipeVault } from './components/RecipeVault';
+import { SocialMediaSection } from './components/SocialMediaSection';
 import { OfficerRosterModal } from './components/OfficerRosterModal';
 import { OfficerManagement } from './components/OfficerManagement';
 import { Footer } from './components/Footer';
@@ -212,6 +213,8 @@ export default function App() {
         <JoinSection
           onMemberRegistered={handleMemberRegistered}
         />
+
+        <SocialMediaSection />
 
         <BrewingTools />
 

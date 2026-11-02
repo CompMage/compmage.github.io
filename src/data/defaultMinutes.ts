@@ -7,140 +7,63 @@ export interface SimpleMeetingNote {
 
 export const DEFAULT_MINUTES: SimpleMeetingNote[] = [
   {
-    id: 'sep-2026',
-    month: 'September 2026',
-    date: 'September 16, 2026',
-    notes: `C.R.A.B.S. Gathering: September 16, 2026
-Location: Heavy Seas Brewery, Halethorpe, MD
-Presiding: Joe O'Keefe (President)
-Recorded By: Ben Schwalb (Secretary)
-Attendees: 28 Members & Guests Present
-
-• CALL TO ORDER:
-Meeting called to order at 7:04 PM by President Joe O'Keefe. Welcomed attending members and guests.
-
-• OFFICER REPORTS:
-- Treasury (Rob Kiernan): Steady club balances with active dues collections via cash and PayPal.
-- Competitions (Chris Hermance): Reviewed 10 entries in Pale/Bitter/Hoppy. Announced October 21 competition featuring Amber, Dark, and Malty lagers.
-- Guild (Tom Flavinh): Tom is in the hospital recovering with pancreatitis through November; the club sends its warmest support.
-
-• TECHNICAL EDUCATION:
-Specialty Fermentations & Barrel Project Fill (presented by Les White & Barrel Committee). Les shared makgeolli (traditional Korean rice wine) from J.S. Brewery. The barrel committee finalized logistics to fill the quad barrel with gueuze using low/unhopped pale ales and aged beers.
-
-• COMPETITION RESULTS (Pale, Bitter / Hoppy):
-- 1st Place (10 pts): Justin Wilson (American Pale Ale)
-- 2nd Place (7 pts): John Jester
-- 3rd Place (5 pts): Brian England
-- 4th Place (tie, 3 pts each): Bob Baroncinni & Craig Bryant
-- 5th Place (tie, 2 pts each): Chris + Christa & Joe O'Keefe
-
-• UPCOMING EVENTS:
-- Sep 26: Maryland Microbrewery Fest & Homebrew Contest at Union Mills Homestead
-- Sep 27: Annual Crabs4CRABS at Guilford Park pavilion in Jessup (Free for members, $20 guests, kids under 14 free)
-- Oct 10: Das Best Oktoberfest at MD State Fairgrounds in Timonium
-- Oct 14: Checkerspot Homebrew Extravaganza (6-9 PM, $10 tickets benefiting BARCS)
-- Oct 17: SMASH 5th Annual Brewers Challenge at Mully's Brewery
-- Oct 21: Next C.R.A.B.S. Meeting: Amber / Dark, Malty Lagers Competition
-
-• OPEN FLOOR & BOTTLE SHARE:
-Tasting and critique of member commercial inspirations and homebrews. Meeting adjourned at 9:18 PM.`
+    id: "oct-2026",
+    month: "October 2026",
+    date: "October 21, 2026",
+    notes: "1. Possible dates for the Guild holiday party are January 30 and February 6. Neither will conflict with the NFL, as the AFC and NFC championship games will be on January 31 and the Super Bowl will be on February 14. At this point it looks as though Heavy Seas will not be able to accommodate us, so we are looking for another venue.\n\n\n2. The Turkey Shoot homebrew competition, organized by BADASS, will be on November 15. Registration closes on November 8. See https://brewingcompetitions.com/turkeyshoot for entry/judging information.\n\n\n3. The Patterson Park 5K and homebrew contest will be on Saturday November 14. See https://www.bmoreglobal.org/event-details/2026-patterson-park-homebrew-contest for details.\n\n\n4. Checkerspot\u2019s Homebrew Extravaganza was another success. There were 21 entries and about 150 attendees. $1500 was raised for BARCS. Four CRABSters placed: Jeff took 10th, Chris+Christa took 8th, Craig took 7th, and Ben took 1st.\n\n\n5. The 2027 HomebrewCon will be July 16-17 in Milwaukee. See https://homebrewersassociation.org/aha-events/homebrewcon/\n\n\n6. We now have CRABS stickers. Pick one up at the next meeting. Thanks to Chris and Christa for having them made.\n\n\n7. Rob and Lisa would like to host a pot luck gathering at their house on Saturday November 14, starting around 4:00. Chime in if you are interested.\n\n\n8. This month\u2019s competition was amber/dark/malty lagers. There were 9 entries. Winners were:\n\n\n\n\u2022 5th \u2013 Craig Bryant\n\n\u2022 4th \u2013 John Jester\n\n\u2022 3rd \u2013 John Keough\n\n\u2022 2nd (tie) \u2013 Jared Jarsocrak\n\n\u2022 2nd (tie) \u2013 Jason Heinen\n\n\u2022 1st \u2013 Bob Baroncinni\n\n\n9. Next meeting: Wednesday November 18. Competition will be porters and stouts.\n\n\n10. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
   },
   {
-    id: 'aug-2026',
-    month: 'August 2026',
-    date: 'August 19, 2026',
-    notes: `C.R.A.B.S. Gathering: August 19, 2026
-Location: Heavy Seas Brewery, Halethorpe, MD
-Presiding: Joe O'Keefe (President)
-Recorded By: Ben Schwalb (Secretary)
-Attendees: 25 Members & Guests Present
-
-• CALL TO ORDER:
-Meeting called to order at 7:06 PM by President Joe O'Keefe. Summer gathering focused on MASHOUT recap and upcoming fall festival circuit.
-
-• OFFICER REPORTS:
-- Treasury (Rob Kiernan): Financial health confirmed; noted club reimbursements for summer festival supplies.
-- Competitions (Chris Hermance): Reminder that September will feature Pale, Bitter / Hoppy styles (BJCP 5A-D, 12A-B, 18A-B).
-- Guild: Early-bird registration and participation updates for state guild events.
-
-• TECHNICAL EDUCATION:
-MASHOUT Retrospective & On-Site Kveik Fermentation (Justin Wilson, Trevor & John Keough). Review of annual MASHOUT in Cumberland, MD. The food competition featured meatloaf: Trevor took 2nd place, while John Jester and John Keough tied for 3rd. Justin brewed a 4-gallon batch of kveik on-site at camp, which kicked during the festival.
-
-• COMPETITION:
-No formal points competition flight held this month in accordance with annual summer club social tradition. Open bottle share & tap tasting.
-
-• UPCOMING EVENTS:
-- Sep 27: Crabs4CRABS Gathering at Guilford Park pavilion in Jessup, MD
-- Sep 16: Next C.R.A.B.S. Meeting: Pale, Bitter / Hoppy Styles
-- Autumn: Maryland Microbrewery Festival, Das Best Oktoberfest, and BADASS Turkey Shoot Competition
-
-• OPEN FLOOR:
-Extensive bottle share featuring member sour ales, summer saisons, and commercial lagers. Meeting adjourned at 9:10 PM.`
+    id: "sep-2026",
+    month: "September 2026",
+    date: "September 16, 2026",
+    notes: "1. Midnight Homebrewers will be running the homebrew contest at the Maryland Microbrewery Fest at Union Mills on Saturday September 26. They are looking for judges, beer entries (American styles only), and especially stewards. Volunteers get breakfast, lunch, and free admission to the beer fest afterwards. This Friday 9/18 is the beer drop-off deadline at Maryland Homebrew and Flying Barrel. The competition page is at https://brewingcompetitions.com/mdmicrobrewfest/ . Email Justin at jwredhead at gmail dot com if you have questions.\n\n\n2. Crabs4CRABS will be on Sunday September 27 at Guilford Park pavilion, our usual location. Free for members and only $20 for guests. Kids under 14 are free. Sign up at https://docs.google.com/spreadsheets/d/13SWaYjFNXHYoxgYZ_WtS2HutyeHL8_lFyEYmOL73Ar4\n\n\n3. Checkerspot\u2019s Homebrew Extravaganza will be held on Wednesday October 14, 6-9 PM. Brewers can start setting up at 5:00. Attendees get all they can drink for $10, and all proceeds go to BARCS.\n\n\n4. Les brought some makgeolli (Korean rice wine) from J.S. Brewery, located in the same plaza as Sapwood Cellars. They offered their location as a CRABS meeting place. Their website is https://jsbrewery.com/\n\n\n5. Tom Flavin is projected to be hospitalized with pancreatitis until November.\n\n\n6. Possible dates for the Guild holiday party are January 30 and February 6. Neither will conflict with the NFL, as the AFC and NFC championship games will be on January 31 and the Super Bowl will be on February 14.\n\n\n7. Several of us are still planning to fill the quad barrel with gueuze. So far the participants are Jason, Frits, Justin, and Ben. Speak up if you want to contribute. You don\u2019t even have to brew anything sour; just a low- or no-hopped pale ale will do, as it will be soured in the barrel. Or, if you have an old pale ale / saison / lager that you want to get rid of, we'll gladly add that.\n\n\n8. Das Best Oktoberfest will be on Saturday October 10 at the MD State Fairgrounds in Timonium. Website is https://baltimore.dasbestoktoberfest.com/\n\n\n9. The Turkey Shoot homebrew competition, organized by BADASS, will be in November. See https://brewingcompetitions.com/turkeyshoot/ for entry/judging information.\n\n\n10. SMASH will be hosting their 5th annual brewers challenge on Saturday October 17, 1:00-5:00, at Mully\u2019s Brewery. Eight homebrews will be judged. It is a fundraiser for Safe Harbor Residential Shelter.\n\n\n11. This month\u2019s competition was pale/bitter/hoppy. There were 10 entries. Winners were:\n\n\n\n\u2022 5th (tie) \u2013 Chris+Christa\n\n\u2022 5th (tie) \u2013 Joe O\u2019Keefe\n\n\u2022 4th (tie) \u2013 Bob Baroncinni\n\n\u2022 4th (tie) \u2013 Craig Bryant\n\n\u2022 3rd \u2013 Brian England\n\n\u2022 2nd \u2013 John Jester\n\n\u2022 1st \u2013 Justin Wilson\n\n\n12. Next meeting: Wednesday October 21. Competition will be amber/dark/malty lagers.\n\n\n13. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
   },
   {
-    id: 'oct-2025',
-    month: 'October 2025',
-    date: 'October 15, 2025',
-    notes: `C.R.A.B.S. Gathering: October 15, 2025
-Location: Heavy Seas Brewery, Halethorpe, MD
-Presiding: Joe O'Keefe (President)
-Recorded By: Ben Schwalb (Secretary)
-Attendees: 27 Members & Guests Present
-
-• CALL TO ORDER:
-President Joe O'Keefe called the meeting to order at 7:05 PM, with a warm welcome to several newcomers attending their first C.R.A.B.S. meeting.
-
-• OFFICER REPORTS:
-- Treasury (Rob Kiernan): Monthly financial report; active renewals for upcoming 2026 club memberships.
-- Competitions (Chris Hermance): Recapped the fall schedule and announced drop-off dates for upcoming winter flights.
-- Guild: Greater Baltimore Chapter / Maryland Homebrewers Guild Holiday Party scheduled for late January or early February.
-
-• TECHNICAL EDUCATION:
-Charity Homebrewing & Checkerspot Extravaganza Debrief (Club Officers & Event Participants). Debrief on the Checkerspot Homebrew Extravaganza benefiting BARCS animal rescue: 28 homebrew entries, more than double the prior year. Discussion on recipe scaling for charity tap takeovers.
-
-• COMPETITION RESULTS (Amber / Dark, Malty Lagers):
-Dark and malty lagers evaluated blind by attendees.
-Winner: Justin Wilson (Czech Dark Lager). Constructive feedback on malt depth, decoction character, and clean lager fermentation profiles.
-
-• UPCOMING EVENTS:
-- Nov: Upcoming Stouts & Porters Flight
-- Dec: Annual C.R.A.B.S. Holiday Party & 750ml Bottle Swap at Heavy Seas
-- Winter: Greater Baltimore Chapter / MD Guild Holiday Gathering
-
-• OPEN FLOOR:
-Table tasting of homebrew dark lagers, bocks, and seasonal pumpkin beers. Meeting adjourned at 9:12 PM.`
+    id: "aug-2026",
+    month: "August 2026",
+    date: "August 19, 2026",
+    notes: "1. MASHOUT was a great success, with lots of great food, beer, and people. Trevor took second in the meatloaf contest, and John Jester and John Keough tied for third. Justin brewed a kveik onsite and the entire 4 gallons got consumed.\n\n\n2. Crabs4CRABS will be on Sunday September 27 at Guilford Park pavilion, our usual location. Free for members and only $20 for guests. Kids under 14 are free. Sign up at https://docs.google.com/spreadsheets/d/13SWaYjFNXHYoxgYZ_WtS2HutyeHL8_lFyEYmOL73Ar4\n\n\n3. Checkerspot\u2019s Homebrew Extravaganza will be held on Wednesday October 14, 6-9 PM. Brewers can start setting up at 5:00. Attendees get all they can drink for $10, and all proceeds go to BARCS.\n\n\n4. Midnight Homebrewers will be running the homebrew contest at the Maryland Microbrewery Fest at Union Mills on Saturday September 26. They are looking for judges and beer entries (American styles only). The competition page is at http://www.marylandmicrobreweryfestival.com/default.asp?iId=FMKMFH . Email Justin at jwredhead at gmail dot com if you have questions.\n\n\n5. The Anne Arundel County Fair will have a homebrew contest in September, and they are desperate for entries. Information at https://aacountyfair.org/wp-content/uploads/2026/06/Home-Brew.pdf\n\n\n6. The DC State Fair will have a homebrew contest. See https://www.dcstatefair.org/2026contestsreg/p/homebrew-lh5l4-synpk-kh25c-ljnw2 for information and https://www.dcstatefair.org/2026-contests for registration. Register by this Friday August 21.\n\n\n7. Several of us plan to fill the quad barrel with gueuze. So far the participants are Jason, Frits, Justin, and Ben. Speak up if you want to contribute. You don\u2019t even have to brew anything sour; just a low- or no-hopped pale ale will do, as it will be soured in the barrel.\u00a0 Or, if you have an old pale ale / saison / lager that you want to get rid of, we'll gladly add that.\n\n\n8. Anil will host another beer tasting on Saturday September 12. His address is 6600 High Bench, Columbia. For more details, email him at adosaj at mac dot com\n\n\n9. There will be a homebrew competition on August 29. It is for clubs only, and the recipe must be one of the three recipes that AHA supplied for National Homebrew Day. If we want to enter, we must:\n\n\n\n\u2022\n\tGo to ReggieBeer.com and select \u201cLogin\u201d at the top left\n\n\n\u2022\n\tSelect the \u201cCreate New Reggie Account\u201d button at the bottom of the page\n\n\n\u2022\n\tFor last name, enter our club name\n\n\n\u2022\n\tEnter password, email address, etc\n\n\n\u2022\n\tEnter club name at the bottom\n\n\n\u2022\n\tClick \u201cAdd Account\u201d\n\n\n\n\n\n\nThen we must:\n\n\n\n\u2022\n\tLogin at https://reggiebeer.com/ReggieEntry.php?CompetitionID=QCVIFS1000980\n\n\n\u2022\n\tUnder \u201cLast Name:\u201d enter \u201cCRABS,\u201d (the comma is necessary)\n\n\n\u2022\n\tA dropdown of registered clubs should be listed\n\n\n\u2022\n\tSelect our club if listed\n\n\n\n\n\n\nContact Nelson@ReggieBeer.com for additional questions or problems.\n\n\n10. Next meeting: Wednesday September 16. Competition will be pale/bitter/hoppy.\n\n\n11. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
   },
   {
-    id: 'dec-2025',
-    month: 'December 2025',
-    date: 'December 17, 2025',
-    notes: `C.R.A.B.S. Gathering: December 17, 2025
-Location: Heavy Seas Brewery, Halethorpe, MD
-Presiding: Joe O'Keefe (President)
-Recorded By: Ben Schwalb (Secretary)
-Attendees: 34 Members & Guests Present
-
-• CALL TO ORDER:
-Meeting and annual celebration called to order at 7:00 PM by President Joe O'Keefe to celebrate the conclusion of a successful 2025 brewing year.
-
-• OFFICER REPORTS:
-- Treasury (Rob Kiernan): Thanked all members for another strong year of club support, insurance, and equipment maintenance.
-- Competitions (Chris Hermance): Presented the 2025 year-end Brewer of the Year standings and reviewed the upcoming 2026 competition calendar.
-- Guild: Guild holiday gathering confirmed for early winter, hosted jointly with regional Maryland homebrew clubs.
-
-• TECHNICAL EDUCATION & CHARITY:
-Community Partnership & Year-End Charity Donations (Joe O'Keefe & Ben Schwalb). In gratitude for hosting C.R.A.B.S. meetings in the taproom, the club organized a generous collection of special homebrews and craft beers for the Heavy Seas crew. Supported charities highlighted: House of Ruth, Pints for Prostates, and Habitat for Humanity.
-
-• HOLIDAY BOTTLE SWAP & AWARDS:
-The club held its signature 750ml holiday bottle swap with member-brewed imperial stouts, barleywines, wild ales, and winter warmers exchanged in a blind grab.
-Annual Club Champion Trophy Presentation awarded.
-
-• UPCOMING EVENTS:
-- Jan 2026: Season Opener — Hedonistic Open Competition (No rules/no styles)
-- Jan/Feb 2026: Maryland Homebrewers Guild Chapter Holiday Party
-- Feb 2026: UK Beers Flight (British Bitter, Scottish Ale, Irish Red)
-
-• OPEN FLOOR:
-Festive potluck buffet, bottle sharing, and toast to 44+ years of C.R.A.B.S. real ale homebrewing fellowship. Meeting adjourned at 9:40 PM.`
-  }
+    id: "jul-2026",
+    month: "July 2026",
+    date: "July 15, 2026",
+    notes: "1. MASHOUT will be held August 13-16 at the same Cumberland location. This year\u2019s CRABS food competition will be meatloaf. Speak up if you want to put a beer on the CRABS jockey box. Register by July 31 for early bird pricing at https://mashout.ticketspice.com/mashout-2026\n\n\n2. Crabs4CRABS will be on Sunday September 27 at Guilford Park pavilion, our usual location. Free for members and only $20 for guests. Kids under 14 are free.\n\n\n3. Checkerspot\u2019s Homebrew Extravaganza will be held on Wednesday October 14, 6-9 PM. Brewers can start setting up at 5:00. Attendees get all they can drink for $10, and all proceeds go to BARCS.\n\n\n4. Midnight Homebrewers will be running the homebrew contest at the Maryland Microbrewery Fest at Union Mills on Saturday September 26. They are looking for judges and beer entries (American styles only). The competition page is at http://www.marylandmicrobreweryfestival.com/default.asp?iId=FMKMFH although not all the necessary information is posted yet.\n\n\n5. This month\u2019s competition was session beers. There were 15 entries. Winners were:\n\n\n\n\u2022 5th \u2013 John Keough\n\n\u2022 4th \u2013 Justin Wilson\n\n\u2022 3rd \u2013 Bob Baroncinni\n\n\u2022 2nd \u2013 Craig Bryant\n\n\u2022 1st \u2013 Ben Schwalb\n\n\n6. Next meeting: Wednesday August 19. There will be no competition.\n\n\n7. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
+  },
+  {
+    id: "jun-2026",
+    month: "June 2026",
+    date: "June 17, 2026",
+    notes: "1. MASHOUT will be held August 13-16 at the same Cumberland location. This year\u2019s CRABS food competition will be meatloaf. Register by July 31 for early bird pricing at https://mashout.ticketspice.com/mashout-2026\n\n\n2. Crabs4CRABS will be on Sunday September 27 at Guilford Park pavilion, our usual location.\n\n\n3. Ben will be throwing a houseparty this Saturday June 27 starting at 3:00 PM. Bring a dish or something to throw on the grill. Kids welcome. Address was sent via email.\n\n\n4. There was a brief discussion about the antioxidant properties of pomegranate extract. Here are a few articles about it:\n\n\n\n\u2022 https://www.murphyandson.co.uk/resources/technical-articles/introducing-mashlife-pomegranate-extract-for-better-beer-stability/\n\n\u2022 https://www.researchgate.net/publication/375954497_Strategies_to_Reduce_the_Iron_Intake_During_the_Brewing_Process_with_respect_to_Flavour_Stability\n\n\n5. This month\u2019s competition was Sapwood Cellars Hedge Trimmer clone. There were 12 entries. Winners were:\n\n\n\n\u2022 5th \u2013 Tom D\u2019Asto\n\n\u2022 4th \u2013 John Keough\n\n\u2022 3rd \u2013 Peter Werle\n\n\u2022 2nd \u2013 Jared Jarsocrak\n\n\u2022 1st \u2013 Justin Wilson\n\n\n6. Next meeting: Wednesday July 15. Competition will be session beers (under 4.5% ABV).\n\n\n7. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
+  },
+  {
+    id: "may-2026",
+    month: "May 2026",
+    date: "May 20, 2026",
+    notes: "1. The CRABS food-beer pairing was a great time as usual. Congratulations to Bob/Sylvia and Chris/Christa for their tie for best beer, Les for best food, and Bob/Sylvia for best pairing.\n\n\n2. HomebrewCon will be held June 19-20 in Asheville NC, with National Homebrew Competition awards being given out on June 18. See https://homebrewersassociation.org/aha-events/homebrewcon/\n\n\nA few CRABS folks will be heading down that Wednesday and staying until the following Monday, so speak up if you\u2019d like to coordinate activities together.\n\n\n3. MASHOUT will be held August 13-16 at the same Cumberland location. Registration will open in June. This year\u2019s CRABS food competition will be meatloaf.\n\n\n4. The Guild summer picnic will be on Saturday June 6, noon-dusk, at Patapsco Valley State Park, Hollofield area, shelter #300. Pot luck food. There will be a hedonistic homebrew contest run by Rob K.\n\n\n5. The 10th annual Pints4Paws will be held on Saturday May 30, 2-6 PM (VIP @ 1:00 PM) at the Naval Academy stadium in Annapolis, Taylor Ave, Gate 5. Details/tickets at https://www.facebook.com/share/1786FWxcuf/\n\n\n$45 to enter, or free entry if you serve beer. Sign up at https://docs.google.com/forms/d/e/1FAIpQLSfT7cFr17mhSE1VVcU54xO3VrHC_qOC5BYNq2qQV5NYb2s1Ag/viewform\n\n\nand also sign up on the CRABS club\u2019s Google doc at https://docs.google.com/spreadsheets/d/1Tzzmacgcbb97FVY2fANCfTr_6ORTnsrsV-q7nYOvsIk/edit?gid=0#gid=0\n\n\nThere is room for another beer on the CRABS jockey box. You can start setting up at the event as early as 10:00 AM.\n\n\n6. Our June competition will be Sapwood Cellars Hedge Trimmer clone, and will be held at Sapwood Cellars. Brewers were each given a can of Hedge Trimmer for evaluation purposes. Entries should be dropped off at Maryland Homebrew or with Joe or Anil by June 14. The meeting is tentatively set to be held at Sapwood Cellars on June 24th (some folks will be traveling to HomebrewCon on the 17th).\n\n\n7. Tom Flavin, the CRABS Guild rep, is having health issues. Justin Wilson has volunteered to fill in temporarily.\n\n\n8. Several of us plan to brew a group sour ale to put in the now-empty CRABS quad barrel. We hope to fill the barrel this fall. Please speak up if you\u2019d like to join this project. Since the barrel is already soured, you don\u2019t actually have to brew a sour ale. You can use a basic Chico yeast or similar. Just a pale wort (no specialty grains) with a 1.055-1.060 gravity and no hops.\n\n\n9. We will be choosing a date for Crabs4CRABS soon.\n\n\n10. This month\u2019s competition was pale/malty lagers. There were 10 entries. Winners were:\n\n\n\n\u2022 5th \u2013 Chris + Christa\n\n\u2022 4th (tie) \u2013 John Keough\n\n\u2022 4th (tie) \u2013 Jared Jarsocrak\n\n\u2022 3rd \u2013 John Bugert\n\n\u2022 2nd \u2013 Justin Wilson\n\n\u2022 1st \u2013 Joe O\u2019Keefe\n\n\n11. Next meeting: Wednesday June 24 at Sapwood Cellars. Competition will be Sapwood Cellars Hedge Trimmer clone.\n\n\n12. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
+  },
+  {
+    id: "apr-2026",
+    month: "April 2026",
+    date: "April 15, 2026",
+    notes: "1. The CRABS food-beer pairing will be on Sunday May 24, 1:00-6:00 PM at Rob and Lisa Kiernan\u2019s house. More details and sign-up at:\n\n\n\n\u2022 https://docs.google.com/document/d/11Xl4DJRmmta51bY37cSqV-GCQeJswYAWdsftIyi90js/edit?usp=sharing\n\n\n2. HomebrewCon will be held June 19-20 in Asheville NC, with National Homebrew Competition awards being given out on June 18. See https://homebrewersassociation.org/aha-events/homebrewcon/\n\n\n3. MASHOUT will be held August 13-16 at the same Cumberland location. Registration will open in June. This year\u2019s CRABS food competition will be meatloaf.\n\n\n4. The Guild summer picnic will be on Saturday June 6, noon-dusk, at Patapsco Valley State Park, Hollofield area, shelter #300. Pot luck food. There will be a hedonistic homebrew contest.\n\n\n5. If you have beer in the CRABS quad barrel, you are welcome to get your share on Saturday April 18 at noon. Address is 550 Charington Drive, Severna Park. If you can\u2019t make that date, you can give a keg to someone who will be there, or coordinate another date/time.\n\n\n6. 2026 dues are $25 for single and $40 for family membership. You can pay Rob in person or Venmo him at @Rob-Kiernan-CRABS\n\n\n7. The 10th annual Pints4Paws will be held on Saturday May 30, 2-6 PM (VIP @ 1:00 PM) at the Naval Academy stadium in Annapolis, Taylor Ave, Gate 5. Details/tickets at https://www.facebook.com/share/1786FWxcuf/\n\n\n$45 to enter, or free entry if you serve beer. Sign up at https://docs.google.com/forms/d/e/1FAIpQLSfT7cFr17mhSE1VVcU54xO3VrHC_qOC5BYNq2qQV5NYb2s1Ag/viewform\n\n\nand also sign up on the CRABS club\u2019s Google doc at https://docs.google.com/spreadsheets/d/1Tzzmacgcbb97FVY2fANCfTr_6ORTnsrsV-q7nYOvsIk/edit?gid=0#gid=0\n\n\n8. Big Brew will be on Saturday May 2. Maryland Homebrew will host as usual. You can brew there, or just hang out and eat/drink. You can start brewing as early at 9:00 AM.\n\n\n9. The Maryland Craft Beer Festival will be held on Saturday May 9 at Carroll Creek Linear Park in Frederick. Info/tickets at https://www.mdcraftbeerfestival.com/\n\n\n10. Our June competition will be Sapwood Cellars Hedge Trimmer clone. Recipe is forthcoming. Entries should be dropped off a week before the meeting so the Sapwood folks can judge them ahead of time. The meeting date is not set in stone yet. It will probably be on the 24th (some folks will be traveling to HomebrewCon on the 17th).\n\n\n11. If anyone wants to take over the CRABS website, contact Jeff at\u00a0 \u00a0 \u00a0jeffade at mac dot com\n\n\n12. This month\u2019s competition was IPAs. There were 12 entries. Winners were:\n\n\n\n\u2022 5th \u2013 Tom D\u2019Asto\n\n\u2022 4th \u2013 Justin Wilson\n\n\u2022 3rd \u2013 Chris + Christa\n\n\u2022 2nd \u2013 Jason Heinen\n\n\u2022 1st \u2013 John Keough\n\n\n13. Next meeting: Wednesday May 20. Competition will be lagers.\n\n\n14. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
+  },
+  {
+    id: "mar-2026",
+    month: "March 2026",
+    date: "March 18, 2026",
+    notes: "1. The CRABS food-beer pairing will be on Sunday May 24 at Rob and Lisa Kiernan\u2019s house. More details and sign-up at:\n\n\nhttps://docs.google.com/document/d/11Xl4DJRmmta51bY37cSqV-GCQeJswYAWdsftIyi90js/edit?usp=sharing\n\n\n2. HomebrewCon will be held June 19-20 in Asheville NC, with National Homebrew Competition awards being given out on June 18. See https://homebrewersassociation.org/aha-events/homebrewcon/\n\n\n3. MASHOUT will be held August 13-16 at the same Cumberland location. This year\u2019s CRABS food competition will be meatloaf.\n\n\n4. The Guild summer picnic will be on Saturday June 6, noon-dusk, at Patapsco Valley State Park, Hollofield area, shelter #300. Pot luck food. There will be a hedonistic homebrew contest.\n\n\n5. Speaking of the Guild, our own John Jester was unanimously elected president, replacing Ben Schwalb. All Guild officers are still CRABS members.\n\n\n6. The CRABS quad barrel should be emptied sometime this spring. Let\u2019s coordinate a date or two.\n\n\n7. 2026 dues are $25 for single and $40 for family membership. You can pay Rob in person or Venmo him at @Rob-Kiernan-CRABS\n\n\n8. Big Brew will be on Saturday May 2. Maryland Homebrew will host as usual. You can brew there, or just hang out and drink.\n\n\n9. The Maryland Craft Beer Festival will be held on Saturday May 9 at Carroll Creek Linear Park in Frederick. Info/tickets at https://www.mdcraftbeerfestival.com/\n\n\n10. Our June competition will be Sapwood Cellars Hedge Trimmer clone. Entries should be dropped off a week before the meeting so the Sapwood folks can judge them ahead of time. The meeting date is not set in stone yet. It will be either the 10th or the 24th (some folks will be traveling to HomebrewCon on the 17th).\n\n\n11. The 10th annual Pints4Paws will be held on Saturday May 30, 2-6 PM (VIP @ 1:00 PM) at the Naval Academy stadium in Annapolis, Taylor Ave, Gate 5. Details/tickets at https://www.facebook.com/share/1786FWxcuf/ . Free entry if you serve beer. Sign up at https://docs.google.com/forms/d/e/1FAIpQLSfT7cFr17mhSE1VVcU54xO3VrHC_qOC5BYNq2qQV5NYb2s1Ag/viewform?usp=sharing&ouid=111039200486633875839\n\n\n12. This month\u2019s competition was Belgian and Trappist. There were 10 entries. Winners were:\n\n\n\n\u2022 5th \u2013 Jared Jarsocrak\n\n\u2022 4th \u2013 Tom D\u2019Asto\n\n\u2022 3rd \u2013 John Jester\n\n\u2022 2nd \u2013 Joe O\u2019Keefe\n\n\u2022 1st \u2013 Bob Baroncinni\n\n\n13. Next meeting: Wednesday April 15. Competition will be IPAs.\n\n\n14. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
+  },
+  {
+    id: "feb-2026",
+    month: "February 2026",
+    date: "February 18, 2026",
+    notes: "1. A small impromptu meeting was held last Wednesday February 11 because Heavy Seas would not be available tonight.\n\n\n2. We held tonight\u2019s meeting at BA Auto Care in Columbia. A big thanks to Brian England for lending us his space.\n\n\n3. 2026 dues are $25 for single and $40 for family membership. You can pay Rob in person or Venmo him at @Rob-Kiernan-CRABS\n\n\n4. HomebrewCon will be held June 19-20 in Asheville NC, with National Homebrew Competition awards being given out on June 18. Registration for the National Homebrew Competition ends on February 25. See https://homebrewersassociation.org/national-homebrew-competition/\n\n\n5. MASHOUT will be held August 13-16 at the same Cumberland location. This year\u2019s CRABS food competition will be meatloaf.\n\n\n6. A reminder that any beer going through the Heavy Seas taproom must be hidden so that it\u2019s not apparent that it\u2019s beer.\n\n\n7. The CRABS food-pair pairing is tentatively set for Sunday May 17 at Rob and Lisa\u2019s. We should firm up the date by next month.\n\n\n8. The Guild summer picnic will be on Saturday June 6, noon-dusk, at Patapsco Valley State Park, Hollofield area, shelter #300. Pot luck food. There will be a hedonistic homebrew contest.\n\n\n9. BMore Brew Crew will have a gathering on Sunday February 22 starting at 2:00 at the Brass Tap in Baltimore. Rare beers will be poured. See https://www.facebook.com/events/1467848644703708/\n\n\n10. The CRABS quad barrel should be emptied sometime this spring. Let\u2019s coordinate a date or two.\n\n\n11. This month\u2019s competition was UK beers. There were 10 entries. Winners were:\n\n\n\n\u2022 5th \u2013 Tom D\u2019Asto\n\n\u2022 4th \u2013 John Bugert\n\n\u2022 3rd (tie) \u2013 Les White\n\n\u2022 3rd (tie) \u2013 Brian England\n\n\u2022 3rd (tie) \u2013 Chris+Christa\n\n\u2022 2nd \u2013 Jared Silliman\n\n\u2022 1st \u2013 Justin Wilson\n\n\n12. Next meeting: Wednesday March 18. Competition will be Belgian and Trappist.\n\n\n13. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
+  },
+  {
+    id: "jan-2026",
+    month: "January 2026",
+    date: "January 21, 2026",
+    notes: "1. Guild holiday party\n\n\n\n\u2022\n\tSaturday January 31, 2026, 6-10 PM at Heavy Seas.\n\n\n\u2022\n\tCharities will be House of Ruth, Pints for Prostates, and Habitat for Humanity.\n\n\n\u2022\n\tTicket sales are live at https://fshcg.ticketspice.com/2025-guild-holiday-party\n\n\n\u2022\n\tThe CRABS table theme will be \u201ccreepy carnival\u201d. There is a sign-up sheet for bringing food, beer, and decorations at https://docs.google.com/spreadsheets/d/172NdVTrwpSbp_yVRfj7QWssfgsss9sKz5wFRlD81iUk/edit\n\n\n\u2022\n\tWe could use more sides and desserts.\n\n\n\n2. 2026 dues are $25 for single and $40 for family membership. You can pay Rob in person or Venmo him at @Rob-Kiernan-CRABS\n\n\n3. HomebrewCon will be held June 19-20 in Asheville NC, with National Homebrew Competition awards being given out on June 18. See https://homebrewersassociation.org/aha-events/homebrewcon/\n\n\n4. MASHOUT will be held August 13-16 at the same Cumberland location.\n\n\n5. Rumors of Manor Hill shutting down are greatly exaggerated.\n\n\n6. An idea for the Sapwood Cellars clone competition is to open it to all homebrew clubs and have each club submit one entry, perhaps using Sapwood Cellars wort. No final decision has been made.\n\n\n7. Rob Farrell has a lot of brewing equipment for sale. A list of items and his email address were sent via email.\n\n\n8. SPBW will have a meeting at Sapwood Cellars on Thursday February 12. No time has been given yet. All are invited.\n\n\n9. Anil will host a beer tasting on Saturday February 7. His address was sent via email.\n\n\n10. This month\u2019s competition was hedonistic. There were 13 entries. Winners were:\n\n\n\n\u2022 5th \u2013 John Keough\n\n\u2022 4th \u2013 Anil Dosaj\n\n\u2022 3rd \u2013 Justin Wilson\n\n\u2022 2nd \u2013 John Jester\n\n\u2022 1st \u2013 Joe O\u2019Keefe\n\n\n11. Next meeting: Wednesday February 18. Competition will be UK beers (BJCP 11A-C, 14A-C, 15A).\n\n\n12. Go to http://crabsbrew.org for CRABS-related information. The 2026 CRABS competition schedule is at http://www.crabsbrew.org/competition_schedule"
+  },
 ];

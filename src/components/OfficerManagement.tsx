@@ -167,7 +167,8 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
   // ==========================================
   const [minutesList, setMinutesList] = useState<SimpleMeetingNote[]>(() => {
     try {
-      const stored = localStorage.getItem('crabs_meeting_minutes_v1');
+      localStorage.removeItem('crabs_meeting_minutes_v1');
+      const stored = localStorage.getItem('crabs_meeting_minutes_v2');
       if (stored) return JSON.parse(stored);
     } catch {}
     return DEFAULT_MINUTES;
@@ -184,7 +185,7 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
   const saveMinutes = (updated: SimpleMeetingNote[]) => {
     setMinutesList(updated);
     try {
-      localStorage.setItem('crabs_meeting_minutes_v1', JSON.stringify(updated));
+      localStorage.setItem('crabs_meeting_minutes_v2', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-minutes-updated'));
     } catch (e) {
       console.error(e);

@@ -359,7 +359,7 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 border border-amber-200/80">
                       <Trophy className="w-3.5 h-3.5 text-amber-600" />
-                      <span>Section 4: Standings</span>
+                      <span>Standings</span>
                     </span>
                     <span className="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
                       {activeLeaderBadge}

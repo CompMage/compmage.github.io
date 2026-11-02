@@ -20,6 +20,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'about', label: 'About & Meetings' },
     { id: 'competitions', label: 'Competitions' },
     { id: 'minutes', label: 'Minutes' },
+    { id: 'social', label: 'Social Media' },
     { id: 'tools', label: 'Brewing Tools' },
     { id: 'vault', label: 'Recipe Vault' }
   ];

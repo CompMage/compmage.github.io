@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   FileText,
   Calendar,
   ExternalLink,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Search,
   Check,
   Copy,
@@ -17,7 +19,8 @@ export type { SimpleMeetingNote };
 export const MeetingMinutes: React.FC = () => {
   const [minutesList, setMinutesList] = useState<SimpleMeetingNote[]>(() => {
     try {
-      const stored = localStorage.getItem('crabs_meeting_minutes_v1');
+      localStorage.removeItem('crabs_meeting_minutes_v1');
+      const stored = localStorage.getItem('crabs_meeting_minutes_v2');
       if (stored) {
         return JSON.parse(stored);
       }
@@ -27,7 +30,7 @@ export const MeetingMinutes: React.FC = () => {
     return DEFAULT_MINUTES;
   });
 
-  const [selectedMinuteId, setSelectedMinuteId] = useState<string>('sep-2026');
+  const [selectedMinuteId, setSelectedMinuteId] = useState<string>('oct-2026');
   const [isMinutesExpanded, setIsMinutesExpanded] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
@@ -36,7 +39,7 @@ export const MeetingMinutes: React.FC = () => {
   useEffect(() => {
     const handleSync = () => {
       try {
-        const stored = localStorage.getItem('crabs_meeting_minutes_v1');
+        const stored = localStorage.getItem('crabs_meeting_minutes_v2');
         if (stored) {
           const parsed = JSON.parse(stored);
           setMinutesList(parsed);
@@ -57,22 +60,53 @@ export const MeetingMinutes: React.FC = () => {
     };
   }, [selectedMinuteId]);
 
+  const filteredMinutes = useMemo(() => {
+    if (!searchQuery.trim()) return minutesList;
+    const q = searchQuery.toLowerCase();
+    return minutesList.filter(
+      (m) => m.month.toLowerCase().includes(q) || m.notes.toLowerCase().includes(q)
+    );
+  }, [minutesList, searchQuery]);
+
+  // Group minutes by year for scalable multi-year archiving
+  const minutesByYear = useMemo(() => {
+    const groups: { [year: string]: SimpleMeetingNote[] } = {};
+    filteredMinutes.forEach((item) => {
+      const match = item.month.match(/\b(19\d\d|20\d\d)\b/) || item.date.match(/\b(19\d\d|20\d\d)\b/);
+      const year = match ? match[1] : 'All Meetings';
+      if (!groups[year]) groups[year] = [];
+      groups[year].push(item);
+    });
+    return groups;
+  }, [filteredMinutes]);
+
+  const currentIndex = filteredMinutes.findIndex((m) => m.id === selectedMinuteId);
+
+  const handlePreviousMonth = () => {
+    if (currentIndex > 0) {
+      setSelectedMinuteId(filteredMinutes[currentIndex - 1].id);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentIndex >= 0 && currentIndex < filteredMinutes.length - 1) {
+      setSelectedMinuteId(filteredMinutes[currentIndex + 1].id);
+    }
+  };
+
   const selectedMinute =
-    minutesList.find((m) => m.id === selectedMinuteId) || minutesList[0] || DEFAULT_MINUTES[0];
+    minutesList.find((m) => m.id === selectedMinuteId) ||
+    filteredMinutes[0] ||
+    minutesList[0] ||
+    DEFAULT_MINUTES[0];
 
   const handleCopy = () => {
-    if (navigator?.clipboard?.writeText) {
+    if (navigator?.clipboard?.writeText && selectedMinute) {
       navigator.clipboard.writeText(selectedMinute.notes);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
   };
-
-  const filteredMinutes = minutesList.filter((m) => {
-    if (!searchQuery.trim()) return true;
-    const q = searchQuery.toLowerCase();
-    return m.month.toLowerCase().includes(q) || m.notes.toLowerCase().includes(q);
-  });
 
   return (
     <div id="minutes" className="pt-6 border-t border-slate-200 scroll-mt-24">
@@ -121,35 +155,88 @@ export const MeetingMinutes: React.FC = () => {
         {isMinutesExpanded && (
           <div className="p-6 sm:p-8 space-y-6 bg-slate-50/40">
             
-            {/* Top Toolbar: Month selector tabs, search, and Add Month */}
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-200">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-bold text-slate-700 uppercase tracking-wider mr-1">
-                  Month:
-                </span>
-                {filteredMinutes.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => setSelectedMinuteId(item.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                      selectedMinuteId === item.id
-                        ? 'bg-red-600 text-white shadow-xs'
-                        : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-                    }`}
+            {/* Top Toolbar: Dropdown selector, quick stepper, and search */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
+              <div className="flex flex-wrap items-center gap-3">
+                <label htmlFor="meeting-month-dropdown" className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-red-600" />
+                  <span>Select Month:</span>
+                </label>
+                
+                <div className="relative inline-flex items-center">
+                  <select
+                    id="meeting-month-dropdown"
+                    value={selectedMinuteId}
+                    onChange={(e) => setSelectedMinuteId(e.target.value)}
+                    className="appearance-none bg-white border border-slate-300 hover:border-slate-400 text-slate-900 font-bold text-xs sm:text-sm rounded-xl pl-3.5 pr-9 py-2 shadow-2xs focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-red-600 cursor-pointer transition-all min-w-[210px] sm:min-w-[260px]"
                   >
-                    {item.month}
-                  </button>
-                ))}
+                    {filteredMinutes.length === 0 ? (
+                      <option disabled value="">No matching meetings</option>
+                    ) : (
+                      Object.keys(minutesByYear).map((year) => (
+                        <optgroup key={year} label={year === 'All Meetings' ? 'Meetings' : `Year ${year}`}>
+                          {minutesByYear[year].map((item) => (
+                            <option key={item.id} value={item.id}>
+                              {item.month} ({item.date})
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))
+                    )}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3 pointer-events-none" />
+                </div>
+
+                {/* Quick Prev/Next Step Buttons */}
+                {filteredMinutes.length > 1 && (
+                  <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 shadow-2xs">
+                    <button
+                      type="button"
+                      onClick={handlePreviousMonth}
+                      disabled={currentIndex <= 0}
+                      className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      title="Newer month"
+                      aria-label="Newer month"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </button>
+                    <span className="text-[11px] font-mono font-medium text-slate-500 px-1.5 select-none">
+                      {currentIndex >= 0 ? currentIndex + 1 : 1} of {filteredMinutes.length}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleNextMonth}
+                      disabled={currentIndex >= filteredMinutes.length - 1 || currentIndex === -1}
+                      className="p-1 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-30 disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors cursor-pointer"
+                      title="Older month"
+                      aria-label="Older month"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div className="relative w-full lg:w-72">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              {/* Search input */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search meeting notes text..."
-                  className="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-red-600"
+                  onChange={(e) => {
+                    const q = e.target.value;
+                    setSearchQuery(q);
+                    if (q.trim()) {
+                      const matches = minutesList.filter(
+                        (m) => m.month.toLowerCase().includes(q.toLowerCase()) || m.notes.toLowerCase().includes(q.toLowerCase())
+                      );
+                      if (matches.length > 0 && !matches.some((m) => m.id === selectedMinuteId)) {
+                        setSelectedMinuteId(matches[0].id);
+                      }
+                    }
+                  }}
+                  placeholder="Search minutes text..."
+                  className="w-full pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-red-600 focus:border-red-600"
                 />
               </div>
             </div>
