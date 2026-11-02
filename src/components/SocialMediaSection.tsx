@@ -75,6 +75,14 @@ export const SocialMediaSection: React.FC = () => {
                   <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                   <span>Member-to-member bottle and hop swaps</span>
                 </div>
+                <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <span>Outings, Events and Happy hour postings</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs sm:text-sm text-slate-700">
+                  <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <span>Member fun stuff, social gatherings & party shares</span>
+                </div>
               </div>
             </div>
 
@@ -101,12 +109,12 @@ export const SocialMediaSection: React.FC = () => {
           {/* Secondary Channels Column */}
           <div className="lg:col-span-5 flex flex-col gap-6 justify-between">
             
-            {/* Club Google Group / Listserv */}
+            {/* Club Google Group / Mailing List */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4 hover:border-slate-300 transition-all flex-1">
               <div className="flex items-center justify-between">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-red-700 bg-red-50 border border-red-200/60">
                   <Mail className="w-3.5 h-3.5 text-red-600" />
-                  <span>Official Listserv</span>
+                  <span>Official Mailing List</span>
                 </span>
                 <span className="text-xs text-slate-500 font-mono">Google Groups</span>
               </div>
@@ -114,21 +122,14 @@ export const SocialMediaSection: React.FC = () => {
                 <h4 className="text-lg font-bold text-slate-900">
                   C.R.A.B.S. Mailing List
                 </h4>
-                <p className="text-xs text-slate-500 font-mono mt-0.5">
-                  crabsbrew@googlegroups.com
-                </p>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                Official club announcements, monthly meeting agendas, minutes releases, and competition drop-off notices sent directly to your email inbox.
+                Official club announcements, monthly meeting agendas, minutes releases, and competition drop-off. Keep in contact with your fellow C.R.A.B.S. members in your email inbox.
               </p>
-              <div className="pt-2">
-                <a
-                  href="mailto:crabsbrew@googlegroups.com"
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-red-600 hover:text-red-700 hover:underline"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>Send Message to crabsbrew@googlegroups.com</span>
-                </a>
+              <div className="pt-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-semibold text-amber-800 bg-amber-50 border border-amber-200/80">
+                  Requires paid membership to join.
+                </span>
               </div>
             </div>
 
