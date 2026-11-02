@@ -116,7 +116,7 @@ export const AboutMeetings: React.FC = () => {
                       Typical Meeting Agenda
                     </span>
                     <span className="text-xs font-mono font-semibold text-slate-500">
-                      7:00 PM – ~9:30 PM
+                      7:00 PM – 9:30 PM
                     </span>
                   </div>
                   <p className="text-base sm:text-lg font-bold text-slate-900">
@@ -147,7 +147,7 @@ export const AboutMeetings: React.FC = () => {
                       <span className="font-medium text-slate-800">Competition Winners Announcements</span>
                     </div>
                     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white border border-slate-200/90 shadow-2xs">
-                      <span className="font-mono font-bold text-red-600 shrink-0">9:00 PM</span>
+                      <span className="font-mono font-bold text-red-600 shrink-0">9:30 PM</span>
                       <span className="font-medium text-slate-800">Clean up, move the fun to the tap room</span>
                     </div>
                   </div>
