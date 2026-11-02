@@ -11,6 +11,7 @@ import { OfficerManagement } from './components/OfficerManagement';
 import { Footer } from './components/Footer';
 import { MemberRegistration } from './types';
 import { DEFAULT_MONTHLY_RESULTS, MonthArchive } from './data/competitionStandings';
+import { DEFAULT_ANNUAL_SCHEDULE, MonthlyComp } from './data/competitionSchedule';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'site' | 'officers'>(() => {
@@ -35,6 +36,25 @@ export default function App() {
     try {
       localStorage.setItem('crabs_competition_standings_v2', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-standings-updated'));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Persistent competition schedule hoisted to root for live synchronization
+  const [competitionSchedule, setCompetitionSchedule] = useState<MonthlyComp[]>(() => {
+    try {
+      const stored = localStorage.getItem('crabs_competition_schedule_v1');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return DEFAULT_ANNUAL_SCHEDULE;
+  });
+
+  const handleUpdateCompetitionSchedule = (updated: MonthlyComp[]) => {
+    setCompetitionSchedule(updated);
+    try {
+      localStorage.setItem('crabs_competition_schedule_v1', JSON.stringify(updated));
+      window.dispatchEvent(new Event('crabs-schedule-updated'));
     } catch (e) {
       console.error(e);
     }
@@ -158,6 +178,8 @@ export default function App() {
         onUpdateRoster={setRoster}
         competitionResults={competitionResults}
         onUpdateCompetitionResults={handleUpdateCompetitionResults}
+        schedule={competitionSchedule}
+        onUpdateSchedule={handleUpdateCompetitionSchedule}
       />
     );
   }
@@ -182,7 +204,10 @@ export default function App() {
 
         <AboutMeetings />
 
-        <CompetitionSchedule competitionResults={competitionResults} />
+        <CompetitionSchedule
+          competitionResults={competitionResults}
+          schedule={competitionSchedule}
+        />
 
         <JoinSection
           onMemberRegistered={handleMemberRegistered}

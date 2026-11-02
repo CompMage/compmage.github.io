@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Beer, Search, Filter, BookOpen, Plus, X, Award, ExternalLink, Printer, ChevronRight, Trash2, FileText, Sparkles, Check } from 'lucide-react';
+import { Beer, Search, Filter, BookOpen, Plus, X, Award, ExternalLink, ChevronRight, Trash2, FileText, Sparkles, Check } from 'lucide-react';
 import { CLUB_RECIPES } from '../data/mockRecipes';
 import { Recipe } from '../types';
 
@@ -178,22 +178,6 @@ export const RecipeVault: React.FC = () => {
       setNewNotes('');
       setNewAward('');
     }, 1200);
-  };
-
-  const handleDeleteRecipe = (id: string, name: string) => {
-    if (window.confirm(`Are you sure you want to remove "${name}" from the Recipe Vault?`)) {
-      const updated = recipes.filter((r) => r.id !== id);
-      setRecipes(updated);
-      try {
-        localStorage.setItem('crabs_recipes_vault_v1', JSON.stringify(updated));
-        window.dispatchEvent(new Event('crabs-recipes-updated'));
-      } catch (err) {
-        console.error('Failed to remove recipe from localStorage', err);
-      }
-      if (activeRecipe?.id === id) {
-        setActiveRecipe(null);
-      }
-    }
   };
 
   return (
@@ -433,30 +417,13 @@ export const RecipeVault: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-2 flex items-center justify-between">
+              <div className="pt-2 flex items-center justify-end">
                 <button
-                  onClick={() => window.print()}
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 cursor-pointer"
+                  onClick={() => setActiveRecipe(null)}
+                  className="px-5 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 cursor-pointer"
                 >
-                  <Printer className="w-4 h-4" />
-                  <span>Print Brewday Sheet</span>
+                  Close Recipe
                 </button>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleDeleteRecipe(activeRecipe.id, activeRecipe.name)}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors border border-red-200 cursor-pointer"
-                    title="Remove recipe from Vault"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Remove Recipe</span>
-                  </button>
-                  <button
-                    onClick={() => setActiveRecipe(null)}
-                    className="px-5 py-2.5 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 cursor-pointer"
-                  >
-                    Close Recipe
-                  </button>
-                </div>
               </div>
             </div>
           </div>
