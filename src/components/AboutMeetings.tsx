@@ -139,7 +139,7 @@ export const AboutMeetings: React.FC = () => {
 
                   <div className="pt-2.5 mt-2 border-t border-slate-200/80 flex items-start gap-2 text-xs sm:text-sm text-slate-600">
                     <span className="font-semibold text-red-600 shrink-0">Tip:</span>
-                    <span>Feel free to bring 2–3 bottles or growlers of your latest homebrew or commercial inspiration!</span>
+                    <span className="font-bold text-[13px]">Feel free to bring 2–3 bottles or growlers of your latest homebrew or commercial inspiration!</span>
                   </div>
                 </div>
               </div>
