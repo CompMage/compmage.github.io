@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Shield,
   ArrowLeft,
@@ -12,6 +12,7 @@ import {
   Check,
   Save,
   Download,
+  Upload,
   Search,
   ExternalLink,
   Beer,
@@ -499,9 +500,11 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
     }
   };
 
+  const csvInputRef = useRef<HTMLInputElement | null>(null);
+
   const exportRosterCSV = () => {
     if (roster.length === 0) return;
-    const headers = ['Member ID', 'Registration Date', 'First Name', 'Last Name', 'Email', 'Phone', 'Type', 'Dues', 'Status'];
+    const headers = ['Member ID', 'Registration Date', 'First Name', 'Last Name', 'Email', 'Phone', 'Type', 'Dues', 'Status', 'Experience', 'Equipment'];
     const rows = roster.map((m) => [
       `"${m.id}"`,
       `"${new Date(m.createdAt).toLocaleDateString()}"`,
@@ -511,7 +514,9 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
       `"${m.phone || ''}"`,
       `"${m.isFamily ? 'Family' : 'Individual'}"`,
       m.duesAmount,
-      `"${m.status}"`
+      `"${m.status}"`,
+      `"${m.brewingExperience || ''}"`,
+      `"${m.equipment || ''}"`
     ]);
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -521,6 +526,161 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleCSVFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        if (!text || !text.trim()) {
+          showNotification('CSV file is empty.');
+          return;
+        }
+
+        // Parse CSV lines respecting quotes
+        const parseCSVLine = (line: string): string[] => {
+          const result: string[] = [];
+          let current = '';
+          let inQuotes = false;
+          for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+              if (inQuotes && line[i + 1] === '"') {
+                current += '"';
+                i++;
+              } else {
+                inQuotes = !inQuotes;
+              }
+            } else if (char === ',' && !inQuotes) {
+              result.push(current.trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          result.push(current.trim());
+          return result;
+        };
+
+        const rawLines = text.split(/\r\n|\n|\r/).filter((l) => l.trim().length > 0);
+        if (rawLines.length < 2) {
+          showNotification('CSV must contain a header row and at least one member row.');
+          return;
+        }
+
+        const headerLine = parseCSVLine(rawLines[0]);
+        const headerMap: { [key: string]: number } = {};
+        headerLine.forEach((h, idx) => {
+          const clean = h.toLowerCase().replace(/[^a-z0-9]/g, '');
+          headerMap[clean] = idx;
+        });
+
+        const findCol = (...names: string[]) => {
+          for (const n of names) {
+            const clean = n.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (headerMap[clean] !== undefined) return headerMap[clean];
+          }
+          return -1;
+        };
+
+        const idIdx = findCol('memberid', 'id');
+        const firstIdx = findCol('firstname', 'first', 'fname');
+        const lastIdx = findCol('lastname', 'last', 'lname');
+        const nameIdx = findCol('name', 'brewername', 'fullname', 'membername');
+        const emailIdx = findCol('email', 'emailaddress', 'mail');
+        const phoneIdx = findCol('phone', 'phonenumber', 'tel', 'cell');
+        const typeIdx = findCol('type', 'membershiptype', 'isfamily');
+        const duesIdx = findCol('dues', 'duesamount', 'amount');
+        const statusIdx = findCol('status', 'duesstatus', 'paymentstatus');
+        const expIdx = findCol('experience', 'brewingexperience', 'explevel');
+        const equipIdx = findCol('equipment', 'brewequipment', 'gear');
+
+        const newMembers: MemberRegistration[] = [];
+
+        for (let i = 1; i < rawLines.length; i++) {
+          const cols = parseCSVLine(rawLines[i]);
+          if (cols.length === 0 || cols.every((c) => !c)) continue;
+
+          let firstName = firstIdx !== -1 && cols[firstIdx] ? cols[firstIdx] : '';
+          let lastName = lastIdx !== -1 && cols[lastIdx] ? cols[lastIdx] : '';
+
+          if ((!firstName || !lastName) && nameIdx !== -1 && cols[nameIdx]) {
+            const parts = cols[nameIdx].split(' ');
+            firstName = parts[0] || 'Member';
+            lastName = parts.slice(1).join(' ') || 'Brew';
+          }
+
+          if (!firstName && !lastName) {
+            firstName = `Member`;
+            lastName = `${i}`;
+          }
+
+          const email = emailIdx !== -1 && cols[emailIdx] ? cols[emailIdx] : `member_${Date.now()}_${i}@crabsbrew.org`;
+          const phone = phoneIdx !== -1 && cols[phoneIdx] ? cols[phoneIdx] : undefined;
+          const memberId = idIdx !== -1 && cols[idIdx] ? cols[idIdx] : `CRABS-${Math.floor(1000 + Math.random() * 9000)}`;
+
+          const isFamilyRaw = typeIdx !== -1 && cols[typeIdx] ? cols[typeIdx].toLowerCase() : '';
+          const isFamily = isFamilyRaw.includes('family') || isFamilyRaw === 'true';
+
+          const duesRaw = duesIdx !== -1 && cols[duesIdx] ? parseFloat(cols[duesIdx].replace(/[^0-9.]/g, '')) : NaN;
+          const duesAmount = !isNaN(duesRaw) ? duesRaw : isFamily ? 40 : 25;
+
+          const statusRaw = statusIdx !== -1 && cols[statusIdx] ? cols[statusIdx].toLowerCase() : '';
+          const status: 'verified' | 'pending' = statusRaw.includes('pending') ? 'pending' : 'verified';
+
+          const experience = expIdx !== -1 && cols[expIdx] ? cols[expIdx] : '3-5 years (Regular homebrewer)';
+          const equipment = equipIdx !== -1 && cols[equipIdx] ? cols[equipIdx] : 'All-Grain BIAB';
+
+          newMembers.push({
+            id: memberId,
+            createdAt: new Date().toISOString(),
+            firstName,
+            lastName,
+            email,
+            phone,
+            brewingExperience: experience,
+            equipment,
+            attendedMeeting: 'yes',
+            isFamily,
+            familyMembers: [],
+            paymentMethod: 'paypal',
+            duesAmount,
+            status
+          });
+        }
+
+        if (newMembers.length > 0) {
+          const existingIds = new Set(roster.map((m) => m.id));
+          const deduplicatedNew = newMembers.map((m) => {
+            if (existingIds.has(m.id)) {
+              return { ...m, id: `CRABS-${Math.floor(1000 + Math.random() * 9000)}` };
+            }
+            return m;
+          });
+
+          const updatedRoster = [...deduplicatedNew, ...roster];
+          onUpdateRoster(updatedRoster);
+          try {
+            localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updatedRoster));
+          } catch {}
+          showNotification(`Successfully imported ${deduplicatedNew.length} member(s) from CSV!`);
+        } else {
+          showNotification('No valid member records found in CSV.');
+        }
+      } catch (err) {
+        console.error('Error importing CSV:', err);
+        showNotification('Failed to parse CSV file. Please verify CSV format.');
+      }
+    };
+
+    reader.readAsText(file);
+    if (e.target) {
+      e.target.value = '';
+    }
   };
 
   // ==========================================
@@ -1474,6 +1634,22 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
+                <input
+                  type="file"
+                  ref={csvInputRef}
+                  onChange={handleCSVFileChange}
+                  accept=".csv,text/csv"
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => csvInputRef.current?.click()}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm"
+                  title="Import members from CSV spreadsheet"
+                >
+                  <Upload className="w-4 h-4 text-slate-300" />
+                  <span>Import CSV</span>
+                </button>
                 <button
                   onClick={exportRosterCSV}
                   className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer"
@@ -1486,7 +1662,7 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                   className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs sm:text-sm rounded-xl transition-all cursor-pointer shadow-md"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>+ Add Member</span>
+                  <span>Add Member</span>
                 </button>
               </div>
             </div>
@@ -1873,7 +2049,7 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                   <select
                     value={newMemberType}
                     onChange={(e) => setNewMemberType(e.target.value as 'individual' | 'family')}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none cursor-pointer"
                   >
                     <option value="individual">Individual ($25)</option>
                     <option value="family">Family ($40)</option>
@@ -1884,12 +2060,28 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                   <select
                     value={newMemberStatus}
                     onChange={(e) => setNewMemberStatus(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none"
+                    className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none cursor-pointer"
                   >
                     <option value="verified">Verified / Paid</option>
                     <option value="pending">Pending</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-300">Brewing Experience Level</label>
+                <select
+                  value={newMemberExp}
+                  onChange={(e) => setNewMemberExp(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
+                >
+                  <option value="Just starting out / Never brewed">Just starting out / Never brewed</option>
+                  <option value="Under 1 year (New to the hobby)">Under 1 year (New to the hobby)</option>
+                  <option value="1-3 years (Casual brewer)">1-3 years (Casual brewer)</option>
+                  <option value="3-5 years (Regular homebrewer)">3-5 years (Regular homebrewer)</option>
+                  <option value="5-10 years (Advanced brewer)">5-10 years (Advanced brewer)</option>
+                  <option value="10+ years (Homebrew veteran / Pro)">10+ years (Homebrew veteran / Pro)</option>
+                </select>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2">
