@@ -234,6 +234,7 @@ export default function App() {
         onClose={() => setIsOfficerModalOpen(false)}
         roster={roster}
         onClearRoster={handleClearRoster}
+        onUpdateRoster={setRoster}
       />
     </div>
   );

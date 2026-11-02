@@ -489,6 +489,20 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
     showNotification('Updated member status.');
   };
 
+  const handleUpdateMemberExperience = (id: string, newExp: string) => {
+    const updated = roster.map((m) => {
+      if (m.id === id) {
+        return { ...m, brewingExperience: newExp };
+      }
+      return m;
+    });
+    onUpdateRoster(updated);
+    try {
+      localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
+    } catch {}
+    showNotification('Updated brewer experience level.');
+  };
+
   const handleRemoveMember = (id: string, name: string) => {
     if (window.confirm(`Remove member "${name}" (${id}) from the active roster?`)) {
       const updated = roster.filter((m) => m.id !== id);
@@ -1752,8 +1766,30 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                               )}
                             </button>
                           </td>
-                          <td className="py-3 px-4 text-slate-300 max-w-xs truncate">
-                            {m.brewingExperience}
+                          <td className="py-3 px-4">
+                            <select
+                              value={m.brewingExperience || '3-5 years (Regular homebrewer)'}
+                              onChange={(e) => handleUpdateMemberExperience(m.id, e.target.value)}
+                              className="bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 text-xs rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer w-full max-w-[210px] truncate"
+                              title="Change brewer experience level"
+                            >
+                              {m.brewingExperience && ![
+                                'Just starting out / Never brewed',
+                                'Under 1 year (New to the hobby)',
+                                '1-3 years (Casual brewer)',
+                                '3-5 years (Regular homebrewer)',
+                                '5-10 years (Advanced brewer)',
+                                '10+ years (Homebrew veteran / Pro)'
+                              ].includes(m.brewingExperience) && (
+                                <option value={m.brewingExperience}>{m.brewingExperience}</option>
+                              )}
+                              <option value="Just starting out / Never brewed">Just starting out / Never brewed</option>
+                              <option value="Under 1 year (New to the hobby)">Under 1 year (New to the hobby)</option>
+                              <option value="1-3 years (Casual brewer)">1-3 years (Casual brewer)</option>
+                              <option value="3-5 years (Regular homebrewer)">3-5 years (Regular homebrewer)</option>
+                              <option value="5-10 years (Advanced brewer)">5-10 years (Advanced brewer)</option>
+                              <option value="10+ years (Homebrew veteran / Pro)">10+ years (Homebrew veteran / Pro)</option>
+                            </select>
                           </td>
                           <td className="py-3 px-4 text-right">
                             <button

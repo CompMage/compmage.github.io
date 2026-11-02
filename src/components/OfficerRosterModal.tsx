@@ -7,13 +7,15 @@ interface OfficerRosterModalProps {
   onClose: () => void;
   roster: MemberRegistration[];
   onClearRoster: () => void;
+  onUpdateRoster?: (updated: MemberRegistration[]) => void;
 }
 
 export const OfficerRosterModal: React.FC<OfficerRosterModalProps> = ({
   isOpen,
   onClose,
   roster,
-  onClearRoster
+  onClearRoster,
+  onUpdateRoster
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -197,8 +199,41 @@ export const OfficerRosterModal: React.FC<OfficerRosterModalProps> = ({
                       </span>
                     </td>
                     <td className="py-3 px-3">
-                      <div className="text-slate-800 font-medium">{member.brewingExperience}</div>
-                      <div className="text-[10px] text-slate-500">{member.equipment}</div>
+                      {onUpdateRoster ? (
+                        <select
+                          value={member.brewingExperience || '3-5 years (Regular homebrewer)'}
+                          onChange={(e) => {
+                            const newExp = e.target.value;
+                            const updated = roster.map((m) => (m.id === member.id ? { ...m, brewingExperience: newExp } : m));
+                            onUpdateRoster(updated);
+                            try {
+                              localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
+                            } catch {}
+                          }}
+                          className="bg-white border border-slate-300 hover:border-slate-400 text-slate-800 text-xs rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-red-500 cursor-pointer w-full max-w-[190px] truncate"
+                          title="Change brewer experience level"
+                        >
+                          {member.brewingExperience && ![
+                            'Just starting out / Never brewed',
+                            'Under 1 year (New to the hobby)',
+                            '1-3 years (Casual brewer)',
+                            '3-5 years (Regular homebrewer)',
+                            '5-10 years (Advanced brewer)',
+                            '10+ years (Homebrew veteran / Pro)'
+                          ].includes(member.brewingExperience) && (
+                            <option value={member.brewingExperience}>{member.brewingExperience}</option>
+                          )}
+                          <option value="Just starting out / Never brewed">Just starting out / Never brewed</option>
+                          <option value="Under 1 year (New to the hobby)">Under 1 year (New to the hobby)</option>
+                          <option value="1-3 years (Casual brewer)">1-3 years (Casual brewer)</option>
+                          <option value="3-5 years (Regular homebrewer)">3-5 years (Regular homebrewer)</option>
+                          <option value="5-10 years (Advanced brewer)">5-10 years (Advanced brewer)</option>
+                          <option value="10+ years (Homebrew veteran / Pro)">10+ years (Homebrew veteran / Pro)</option>
+                        </select>
+                      ) : (
+                        <div className="text-slate-800 font-medium">{member.brewingExperience}</div>
+                      )}
+                      <div className="text-[10px] text-slate-500 mt-0.5">{member.equipment}</div>
                     </td>
                     <td className="py-3 px-3">
                       {member.familyMembers.length > 0 ? (
