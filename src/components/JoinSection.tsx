@@ -170,7 +170,7 @@ export const JoinSection: React.FC<JoinSectionProps> = ({ onMemberRegistered }) 
     bodyLines.push(`Registered on: ${new Date(member.createdAt).toLocaleString()}`);
     bodyLines.push(`Looking forward to brewing with everyone!`);
 
-    return `mailto:treasurer@crabsbrew.org?subject=${subject}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
+    return `mailto:crabsbrew@googlegroups.com?subject=${subject}&body=${encodeURIComponent(bodyLines.join('\n'))}`;
   };
 
   const handleReset = () => {
@@ -287,7 +287,7 @@ export const JoinSection: React.FC<JoinSectionProps> = ({ onMemberRegistered }) 
                 </span>
                 {submittedMember.paymentMethod === 'paypal' ? (
                   <p className="text-slate-600">
-                    To complete your registration online, please send <strong>${submittedMember.duesAmount}.00</strong> via PayPal to <code className="bg-white px-1.5 py-0.5 rounded text-red-600 font-bold font-mono">treasurer@crabsbrew.org</code> (or click the PayPal button below). Include your Member ID <span className="font-mono font-bold">({submittedMember.id})</span> in the payment note.
+                    To complete your registration online, please send <strong>${submittedMember.duesAmount}.00</strong> via PayPal to <code className="bg-white px-1.5 py-0.5 rounded text-red-600 font-bold font-mono">crabsbrew@googlegroups.com</code> (or click the PayPal button below). Include your Member ID <span className="font-mono font-bold">({submittedMember.id})</span> in the payment note.
                   </p>
                 ) : (
                   <p className="text-slate-600">
@@ -691,7 +691,7 @@ export const JoinSection: React.FC<JoinSectionProps> = ({ onMemberRegistered }) 
                     </span>
                   </div>
                   <p className="text-xs text-slate-600 pl-6 leading-relaxed">
-                    Submit your registration, then send <strong>${isFamily ? '40' : '25'}</strong> to <span className="font-mono font-semibold text-slate-800">treasurer@crabsbrew.org</span> via PayPal with your name in the payment notes.
+                    Submit your registration, then send <strong>${isFamily ? '40' : '25'}</strong> to <span className="font-mono font-semibold text-slate-800">crabsbrew@googlegroups.com</span> via PayPal with your name in the payment notes.
                   </p>
                 </div>
 
