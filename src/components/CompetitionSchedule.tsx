@@ -369,7 +369,7 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
                     2026 Brewer of the Year Standings
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500">
-                    Cumulative championship points earned from monthly blind BJCP competition flights (1st=10, 2nd=7, 3rd=5, 4th=3, 5th=2).
+                    Cumulative championship points earned from monthly blind BJCP competitions.
                   </p>
                 </div>
               </div>
