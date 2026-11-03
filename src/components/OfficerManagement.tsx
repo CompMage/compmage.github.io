@@ -40,6 +40,13 @@ import {
 import { MonthlyComp, DEFAULT_ANNUAL_SCHEDULE } from '../data/competitionSchedule';
 import { CLUB_RECIPES } from '../data/mockRecipes';
 import { Recipe, MemberRegistration } from '../types';
+import {
+  saveStandingsToServer,
+  downloadStandingsCSV,
+  parseStandingsCSVText,
+  saveScheduleToServer,
+  saveMinutesToServer
+} from '../services/api';
 
 interface OfficerManagementProps {
   onBackToSite: () => void;
@@ -126,6 +133,9 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
   const saveSchedule = (updated: MonthlyComp[]) => {
     setScheduleList(updated);
     if (onUpdateSchedule) onUpdateSchedule(updated);
+    saveScheduleToServer(updated).catch((err) => {
+      console.error('Failed to sync schedule to server:', err);
+    });
     try {
       localStorage.setItem('crabs_competition_schedule_v1', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-schedule-updated'));
@@ -225,6 +235,9 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
 
   const saveMinutes = (updated: SimpleMeetingNote[]) => {
     setMinutesList(updated);
+    saveMinutesToServer(updated).catch((err) => {
+      console.error('Failed to sync minutes to server:', err);
+    });
     try {
       localStorage.setItem('crabs_meeting_minutes_v2', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-minutes-updated'));
@@ -297,6 +310,10 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
     if (onUpdateCompetitionResults) {
       onUpdateCompetitionResults(updated);
     }
+    // Persist to server files (standings.json & standings.csv)
+    saveStandingsToServer(updated).catch((err) => {
+      console.error('Failed to sync standings to server:', err);
+    });
     try {
       localStorage.setItem('crabs_competition_standings_v2', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-standings-updated'));
@@ -310,6 +327,78 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
       saveStandings([]);
       showNotification('All competition standings have been reset.');
     }
+  };
+
+  // Standings CSV Import / Export State
+  const [isImportingStandingsCSV, setIsImportingStandingsCSV] = useState<boolean>(false);
+  const [standingsCSVMode, setStandingsCSVMode] = useState<'append' | 'replace'>('append');
+  const [parsedStandingsPreview, setParsedStandingsPreview] = useState<MonthArchive[] | null>(null);
+  const [standingsCSVError, setStandingsCSVError] = useState<string | null>(null);
+  const standingsCSVInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleStandingsCSVFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setStandingsCSVError(null);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target?.result as string;
+        const parsed = parseStandingsCSVText(text);
+        if (parsed.length === 0) {
+          setStandingsCSVError('No valid standings records found in the uploaded CSV file. Please ensure the CSV has columns like Month, Place, Brewer Name, Beer Name / Style, Points.');
+          setParsedStandingsPreview(null);
+        } else {
+          setParsedStandingsPreview(parsed);
+          setStandingsCSVError(null);
+        }
+      } catch (err: any) {
+        setStandingsCSVError(err?.message || 'Failed to parse CSV file.');
+        setParsedStandingsPreview(null);
+      }
+    };
+    reader.onerror = () => {
+      setStandingsCSVError('Failed to read CSV file from your disk.');
+    };
+    reader.readAsText(file);
+  };
+
+  const handleApplyStandingsCSV = () => {
+    if (!parsedStandingsPreview || parsedStandingsPreview.length === 0) return;
+
+    let updated: MonthArchive[] = [];
+    if (standingsCSVMode === 'replace') {
+      updated = parsedStandingsPreview;
+    } else {
+      // Append mode: merge months. If month exists, the newly imported month record takes precedence
+      const existingMap = new Map<string, MonthArchive>();
+      competitionResults.forEach((m) => existingMap.set(m.month.trim().toLowerCase(), m));
+      parsedStandingsPreview.forEach((m) => existingMap.set(m.month.trim().toLowerCase(), m));
+
+      const monthOrder = [
+        'january', 'february', 'march', 'april', 'may', 'june',
+        'july', 'august', 'september', 'october', 'november', 'december'
+      ];
+      updated = Array.from(existingMap.values()).sort((a, b) => {
+        const aIdx = monthOrder.indexOf(a.month.trim().toLowerCase());
+        const bIdx = monthOrder.indexOf(b.month.trim().toLowerCase());
+        if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
+        if (aIdx !== -1) return -1;
+        if (bIdx !== -1) return 1;
+        return a.month.localeCompare(b.month);
+      });
+    }
+
+    saveStandings(updated);
+    setIsImportingStandingsCSV(false);
+    setParsedStandingsPreview(null);
+    setStandingsCSVError(null);
+    if (standingsCSVInputRef.current) standingsCSVInputRef.current.value = '';
+    showNotification(
+      standingsCSVMode === 'replace'
+        ? `Replaced standings with ${parsedStandingsPreview.length} months from CSV file.`
+        : `Merged CSV standings! ${parsedStandingsPreview.length} month(s) imported and saved to server.`
+    );
   };
 
   // Standings input form state
@@ -1420,16 +1509,39 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
         {/* ========================================================= */}
         {activeTab === 'standings' && (
           <div className="space-y-8">
-            <div className="bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-                Competitions Desk
-              </span>
-              <h2 className="text-xl sm:text-2xl font-black text-white">
-                Enter Monthly Competition Flight Standings
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-300">
-                Put in this month's brewer placings (1st: 10 pts, 2nd: 7 pts, 3rd: 5 pts, 4th: 3 pts, 5th: 2 pts). The Brewer of the Year leaderboard recomputes automatically.
-              </p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
+                  Competitions Desk · Live Server Persistence
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-white">
+                  Enter Monthly Competition Flight Standings
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-300">
+                  Input brewer placings or import CSV spreadsheet. Changes persist automatically to server storage so every system and visitor sees live updates.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsImportingStandingsCSV(true)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm"
+                  title="Import standings from a CSV file"
+                >
+                  <Upload className="w-4 h-4 text-emerald-200" />
+                  <span>Import CSV</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => downloadStandingsCSV(competitionResults)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-sm"
+                  title="Download all competition flight standings as a CSV file"
+                >
+                  <Download className="w-4 h-4 text-slate-300" />
+                  <span>Export CSV</span>
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -2397,6 +2509,204 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: IMPORT STANDINGS CSV */}
+      {/* ========================================================= */}
+      {isImportingStandingsCSV && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-5 relative max-h-[92vh] overflow-y-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setIsImportingStandingsCSV(false);
+                setParsedStandingsPreview(null);
+                setStandingsCSVError(null);
+              }}
+              className="absolute top-5 right-5 p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
+              <div className="p-2.5 bg-emerald-950/70 text-emerald-400 rounded-xl border border-emerald-800/40">
+                <Upload className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black text-white">
+                  Import Competition Standings CSV
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Upload a CSV spreadsheet with flight results. Saves persistently to server so all visitors see live updates.
+                </p>
+              </div>
+            </div>
+
+            {/* Hidden file input */}
+            <input
+              type="file"
+              ref={standingsCSVInputRef}
+              onChange={handleStandingsCSVFileChange}
+              accept=".csv,text/csv"
+              className="hidden"
+            />
+
+            {/* Upload trigger button / dropzone */}
+            <div
+              onClick={() => standingsCSVInputRef.current?.click()}
+              className="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-6 text-center cursor-pointer transition-colors bg-slate-950/60 hover:bg-slate-950"
+            >
+              <Upload className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+              <p className="text-sm font-bold text-white">
+                {parsedStandingsPreview
+                  ? 'Click to choose a different CSV file'
+                  : 'Click to select CSV file from your computer'}
+              </p>
+              <p className="text-xs text-slate-400 mt-1">
+                Accepts standard comma-separated (.csv) files
+              </p>
+            </div>
+
+            {/* CSV Format hints */}
+            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-[11px] text-slate-400 space-y-1">
+              <span className="font-bold text-slate-300 block">Accepted CSV column formats:</span>
+              <p className="font-mono text-emerald-300">
+                • Standard: Month, Style Category, Place, Brewer Name, Beer Name / Style, Points
+              </p>
+              <p className="font-mono text-slate-400">
+                • Summary: Month, Category, 1st Place, 2nd Place, 3rd Place, 4th Place, 5th Place
+              </p>
+            </div>
+
+            {standingsCSVError && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-red-950/70 border border-red-800 text-xs text-red-200">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <span>{standingsCSVError}</span>
+              </div>
+            )}
+
+            {/* Preview of parsed data */}
+            {parsedStandingsPreview && parsedStandingsPreview.length > 0 && (
+              <div className="space-y-4 pt-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>Parsed {parsedStandingsPreview.length} Month(s)</span>
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    Total Placements:{' '}
+                    <strong className="text-white">
+                      {parsedStandingsPreview.reduce((acc, m) => acc + (m.standings?.length || 0), 0)}
+                    </strong>
+                  </span>
+                </div>
+
+                <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
+                  {parsedStandingsPreview.map((m, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs"
+                    >
+                      <div className="flex items-center justify-between font-bold text-white mb-1.5">
+                        <span className="text-amber-400">{m.month}</span>
+                        <span className="text-slate-400 font-normal">{m.styleCategory}</span>
+                      </div>
+                      <div className="space-y-0.5 text-[11px] text-slate-300">
+                        {m.standings?.map((p, pIdx) => (
+                          <div key={pIdx} className="flex justify-between font-mono">
+                            <span>
+                              {p.place === 1 ? '🥇 1st' : p.place === 2 ? '🥈 2nd' : p.place === 3 ? '🥉 3rd' : `${p.place}th`}: {p.brewer}{p.beerName ? ` (${p.beerName})` : ''}
+                            </span>
+                            <span className="text-amber-400 font-bold">{p.points} pts</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Import Mode: Append vs Replace */}
+                <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-2.5">
+                  <span className="text-xs font-bold text-white block">
+                    Choose Import Mode:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label
+                      className={`flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        standingsCSVMode === 'append'
+                          ? 'border-emerald-500 bg-emerald-950/20 text-white'
+                          : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="standingsCSVMode"
+                        value="append"
+                        checked={standingsCSVMode === 'append'}
+                        onChange={() => setStandingsCSVMode('append')}
+                        className="mt-0.5 text-emerald-500 focus:ring-emerald-500"
+                      />
+                      <div className="text-xs">
+                        <strong className="block text-white">Append / Merge</strong>
+                        <span className="text-[11px] text-slate-400 block">
+                          Add or update months from this CSV. Keeps your other existing months untouched.
+                        </span>
+                      </div>
+                    </label>
+
+                    <label
+                      className={`flex items-start gap-2.5 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        standingsCSVMode === 'replace'
+                          ? 'border-amber-500 bg-amber-950/20 text-white'
+                          : 'border-slate-800 bg-slate-900/60 text-slate-300 hover:border-slate-700'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="standingsCSVMode"
+                        value="replace"
+                        checked={standingsCSVMode === 'replace'}
+                        onChange={() => setStandingsCSVMode('replace')}
+                        className="mt-0.5 text-amber-500 focus:ring-amber-500"
+                      />
+                      <div className="text-xs">
+                        <strong className="block text-white">Overwrite / Replace</strong>
+                        <span className="text-[11px] text-slate-400 block">
+                          Replace all current standings with only the data in this CSV file.
+                        </span>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsImportingStandingsCSV(false);
+                  setParsedStandingsPreview(null);
+                  setStandingsCSVError(null);
+                }}
+                className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white bg-slate-800 rounded-lg cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleApplyStandingsCSV}
+                disabled={!parsedStandingsPreview || parsedStandingsPreview.length === 0}
+                className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-sm cursor-pointer flex items-center gap-1.5"
+              >
+                <Check className="w-4 h-4" />
+                <span>Confirm & Apply Import</span>
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -14,6 +14,14 @@ import { Footer } from './components/Footer';
 import { MemberRegistration } from './types';
 import { DEFAULT_MONTHLY_RESULTS, MonthArchive } from './data/competitionStandings';
 import { DEFAULT_ANNUAL_SCHEDULE, MonthlyComp } from './data/competitionSchedule';
+import {
+  fetchStandings,
+  saveStandingsToServer,
+  fetchSchedule,
+  saveScheduleToServer,
+  fetchRoster,
+  saveRosterToServer
+} from './services/api';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'site' | 'officers'>(() => {
@@ -48,6 +56,7 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
+    saveStandingsToServer(updated);
   };
 
   // Persistent competition schedule hoisted to root for live synchronization
@@ -67,7 +76,29 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
+    saveScheduleToServer(updated);
   };
+
+  // Sync with full-stack server on mount so changes on any device are visible
+  useEffect(() => {
+    fetchStandings().then((serverStandings) => {
+      if (serverStandings !== null) {
+        setCompetitionResults(serverStandings);
+      }
+    });
+
+    fetchSchedule().then((serverSchedule) => {
+      if (serverSchedule !== null && serverSchedule.length > 0) {
+        setCompetitionSchedule(serverSchedule);
+      }
+    });
+
+    fetchRoster().then((serverRoster) => {
+      if (serverRoster !== null && serverRoster.length > 0) {
+        setRoster(serverRoster);
+      }
+    });
+  }, []);
 
   // Hash listener for direct navigation / bookmarks
   useEffect(() => {
@@ -164,13 +195,23 @@ export default function App() {
       try {
         localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
       } catch {}
+      saveRosterToServer(updated);
       return updated;
     });
+  };
+
+  const handleUpdateRoster = (updated: MemberRegistration[]) => {
+    setRoster(updated);
+    try {
+      localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
+    } catch {}
+    saveRosterToServer(updated);
   };
 
   const handleClearRoster = () => {
     setRoster([]);
     localStorage.removeItem('crabs_member_roster_v1');
+    saveRosterToServer([]);
   };
 
   const scrollToSection = (id: string) => {
@@ -202,7 +243,7 @@ export default function App() {
         onBackToSite={returnToSite}
         onLogout={handleOfficerLogout}
         roster={roster}
-        onUpdateRoster={setRoster}
+        onUpdateRoster={handleUpdateRoster}
         competitionResults={competitionResults}
         onUpdateCompetitionResults={handleUpdateCompetitionResults}
         schedule={competitionSchedule}
@@ -260,7 +301,7 @@ export default function App() {
         onClose={() => setIsOfficerModalOpen(false)}
         roster={roster}
         onClearRoster={handleClearRoster}
-        onUpdateRoster={setRoster}
+        onUpdateRoster={handleUpdateRoster}
       />
     </div>
   );
