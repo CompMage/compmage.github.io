@@ -137,12 +137,9 @@ export const OfficerLoginGate: React.FC<OfficerLoginGateProps> = ({ onSuccess, o
           </button>
         </form>
 
-        {/* Footer info & Default reminder */}
-        <div className="pt-2 border-t border-slate-800/80 text-center space-y-1">
+        {/* Footer info */}
+        <div className="pt-2 border-t border-slate-800/80 text-center">
           <p className="text-[11px] text-slate-500">
-            Default initial password: <code className="text-slate-300 font-mono bg-slate-800/80 px-1.5 py-0.5 rounded border border-slate-700">crabs1981</code>
-          </p>
-          <p className="text-[10px] text-slate-500">
             Session remains unlocked until this browser tab is closed or you log out.
           </p>
         </div>
