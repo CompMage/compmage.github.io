@@ -9,6 +9,7 @@ import { RecipeVault } from './components/RecipeVault';
 import { SocialMediaSection } from './components/SocialMediaSection';
 import { OfficerRosterModal } from './components/OfficerRosterModal';
 import { OfficerManagement } from './components/OfficerManagement';
+import { OfficerLoginGate } from './components/OfficerLoginGate';
 import { Footer } from './components/Footer';
 import { MemberRegistration } from './types';
 import { DEFAULT_MONTHLY_RESULTS, MonthArchive } from './data/competitionStandings';
@@ -17,6 +18,13 @@ import { DEFAULT_ANNUAL_SCHEDULE, MonthlyComp } from './data/competitionSchedule
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'site' | 'officers'>(() => {
     return window.location.hash === '#officers' || window.location.hash === '#management' ? 'officers' : 'site';
+  });
+  const [isOfficerAuthenticated, setIsOfficerAuthenticated] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('crabs_officer_authenticated') === 'true';
+    } catch {
+      return false;
+    }
   });
   const [activeTab, setActiveTab] = useState<string>('about');
   const [isOfficerModalOpen, setIsOfficerModalOpen] = useState<boolean>(false);
@@ -84,6 +92,14 @@ export default function App() {
     setCurrentPage('site');
     window.location.hash = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOfficerLogout = () => {
+    try {
+      sessionStorage.removeItem('crabs_officer_authenticated');
+    } catch {}
+    setIsOfficerAuthenticated(false);
+    returnToSite();
   };
 
   // Load persistent roster on mount
@@ -172,9 +188,19 @@ export default function App() {
   };
 
   if (currentPage === 'officers') {
+    if (!isOfficerAuthenticated) {
+      return (
+        <OfficerLoginGate
+          onSuccess={() => setIsOfficerAuthenticated(true)}
+          onBackToSite={returnToSite}
+        />
+      );
+    }
+
     return (
       <OfficerManagement
         onBackToSite={returnToSite}
+        onLogout={handleOfficerLogout}
         roster={roster}
         onUpdateRoster={setRoster}
         competitionResults={competitionResults}

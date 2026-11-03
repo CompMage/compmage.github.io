@@ -24,7 +24,10 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
-  Printer
+  Printer,
+  Lock,
+  KeyRound,
+  LogOut
 } from 'lucide-react';
 import { SimpleMeetingNote, DEFAULT_MINUTES } from '../data/defaultMinutes';
 import {
@@ -40,6 +43,7 @@ import { Recipe, MemberRegistration } from '../types';
 
 interface OfficerManagementProps {
   onBackToSite: () => void;
+  onLogout?: () => void;
   roster: MemberRegistration[];
   onUpdateRoster: (newRoster: MemberRegistration[]) => void;
   competitionResults?: MonthArchive[];
@@ -50,6 +54,7 @@ interface OfficerManagementProps {
 
 export const OfficerManagement: React.FC<OfficerManagementProps> = ({
   onBackToSite,
+  onLogout,
   roster,
   onUpdateRoster,
   competitionResults: propCompetitionResults,
@@ -59,6 +64,41 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'minutes' | 'schedule' | 'standings' | 'roster' | 'vault'>('minutes');
   const [notification, setNotification] = useState<string | null>(null);
+
+  // Security & Password Management State
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState('');
+  const [passwordChangeError, setPasswordChangeError] = useState<string | null>(null);
+
+  const handleChangePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordChangeError(null);
+
+    const storedPassword = localStorage.getItem('crabs_officer_password_v1') || 'crabs1981';
+    if (currentPasswordInput.trim() !== storedPassword.trim()) {
+      setPasswordChangeError('Current password is incorrect.');
+      return;
+    }
+
+    if (newPasswordInput.trim().length < 4) {
+      setPasswordChangeError('New password must be at least 4 characters long.');
+      return;
+    }
+
+    if (newPasswordInput !== confirmPasswordInput) {
+      setPasswordChangeError('New passwords do not match.');
+      return;
+    }
+
+    localStorage.setItem('crabs_officer_password_v1', newPasswordInput.trim());
+    setIsChangingPassword(false);
+    setCurrentPasswordInput('');
+    setNewPasswordInput('');
+    setConfirmPasswordInput('');
+    showNotification('Officer portal password updated successfully.');
+  };
 
   const showNotification = (msg: string) => {
     setNotification(msg);
@@ -813,8 +853,38 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
               </div>
             </div>
 
-            {/* Right: Quick Stats Bar */}
-            <div className="flex items-center gap-2.5 text-xs text-slate-300">
+            {/* Right: Quick Stats & Security Actions */}
+            <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-300">
+              <button
+                type="button"
+                onClick={() => {
+                  setPasswordChangeError(null);
+                  setCurrentPasswordInput('');
+                  setNewPasswordInput('');
+                  setConfirmPasswordInput('');
+                  setIsChangingPassword(true);
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-amber-300 bg-amber-950/60 hover:bg-amber-900/60 border border-amber-800/60 hover:border-amber-600 transition-all cursor-pointer shadow-xs"
+                title="Change master officer portal password"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                <span>Change Password</span>
+              </button>
+
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-bold text-slate-300 hover:text-red-300 bg-slate-900 hover:bg-red-950/60 border border-slate-800 hover:border-red-800/80 transition-all cursor-pointer shadow-xs"
+                  title="Lock portal and log out of officer session"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-red-400" />
+                  <span>Log Out</span>
+                </button>
+              )}
+
+              <div className="h-5 w-px bg-slate-800 hidden lg:block" />
+
               <div className="bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-lg flex items-center gap-2">
                 <Calendar className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Active Month: <strong className="text-white font-mono">{activeMonthComp.month}</strong></span>
@@ -2228,6 +2298,105 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
                 Close
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: CHANGE OFFICER PASSWORD */}
+      {/* ========================================================= */}
+      {isChangingPassword && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-amber-950/60 text-amber-400 rounded-lg border border-amber-800/40">
+                  <KeyRound className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-white">
+                    Change Officer Password
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Update master password for the C.R.A.B.S. officer portal.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsChangingPassword(false)}
+                className="text-slate-400 hover:text-white font-bold text-sm cursor-pointer p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleChangePasswordSubmit} className="space-y-4 pt-1">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-300">
+                  Current Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={currentPasswordInput}
+                  onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                  placeholder="Enter current officer password..."
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-300">
+                  New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={newPasswordInput}
+                  onChange={(e) => setNewPasswordInput(e.target.value)}
+                  placeholder="Minimum 4 characters..."
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-300">
+                  Confirm New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={confirmPasswordInput}
+                  onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                  placeholder="Re-enter new password..."
+                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+              </div>
+
+              {passwordChangeError && (
+                <div className="flex items-start gap-2 p-2.5 rounded-lg bg-red-950/60 border border-red-800 text-xs text-red-200">
+                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                  <span>{passwordChangeError}</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsChangingPassword(false)}
+                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-white bg-slate-800 rounded-lg cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-sm cursor-pointer"
+                >
+                  Save New Password
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
