@@ -1,1 +1,440 @@
-[]
+[
+  {
+    "month": "January",
+    "monthNumber": 1,
+    "styleCategory": "Hedonistic",
+    "bjcpCode": "Hedonistic",
+    "entriesCount": 13,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "Joe O’Keefe",
+        "beerName": "",
+        "style": "Hedonistic"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "John Jester",
+        "beerName": "",
+        "style": "Hedonistic"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "Justin Wilson",
+        "beerName": "",
+        "style": "Hedonistic"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "Anil Dosaj",
+        "beerName": "",
+        "style": "Hedonistic"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "John Keough",
+        "beerName": "",
+        "style": "Hedonistic"
+      }
+    ]
+  },
+  {
+    "month": "February",
+    "monthNumber": 2,
+    "styleCategory": "UK Beers",
+    "bjcpCode": "BJCP 11A-C, 14A-C, 15A",
+    "entriesCount": 10,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "Justin Wilson",
+        "beerName": "",
+        "style": "UK Beers"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "Jared Silliman",
+        "beerName": "",
+        "style": "UK Beers"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "Christa Chasis",
+        "beerName": "",
+        "style": "UK Beers"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "Brian England",
+        "beerName": "",
+        "style": "UK Beers"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "Les White",
+        "beerName": "",
+        "style": "UK Beers"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "John Bugert",
+        "beerName": "",
+        "style": "UK Beers"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "Tom D’Asto",
+        "beerName": "",
+        "style": "UK Beers"
+      }
+    ]
+  },
+  {
+    "month": "March",
+    "monthNumber": 3,
+    "styleCategory": "Belgian & Trappist",
+    "bjcpCode": "BJCP 24B-C, 25A-B, 26A-C",
+    "entriesCount": 10,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "Bob Baroncinni",
+        "beerName": "",
+        "style": "Belgian & Trappist"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "Joe O’Keefe",
+        "beerName": "",
+        "style": "Belgian & Trappist"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "John Jester",
+        "beerName": "",
+        "style": "Belgian & Trappist"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "Tom D’Asto",
+        "beerName": "",
+        "style": "Belgian & Trappist"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "Jared Jarsocrak",
+        "beerName": "",
+        "style": "Belgian & Trappist"
+      }
+    ]
+  },
+  {
+    "month": "April",
+    "monthNumber": 4,
+    "styleCategory": "IPAs",
+    "bjcpCode": "BJCP 12C, 21A-C",
+    "entriesCount": 12,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "John Keough",
+        "beerName": "",
+        "style": "IPAs"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "Jason Heinen",
+        "beerName": "",
+        "style": "IPAs"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "Christa Chasis",
+        "beerName": "",
+        "style": "IPAs"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "Justin Wilson",
+        "beerName": "",
+        "style": "IPAs"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "Tom D’Asto",
+        "beerName": "",
+        "style": "IPAs"
+      }
+    ]
+  },
+  {
+    "month": "May",
+    "monthNumber": 5,
+    "styleCategory": "Pale, Malty",
+    "bjcpCode": "BJCP 1A-C, 2A, 3A-B, 4A-C",
+    "entriesCount": 10,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "Joe O’Keefe",
+        "beerName": "",
+        "style": "Pale, Malty"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "Justin Wilson",
+        "beerName": "",
+        "style": "Pale, Malty"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "John Bugert",
+        "beerName": "",
+        "style": "Pale, Malty"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "Jared Jarsocrak",
+        "beerName": "",
+        "style": "Pale, Malty"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "John Keough",
+        "beerName": "",
+        "style": "Pale, Malty"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "Christa Chasis",
+        "beerName": "",
+        "style": "Pale, Malty"
+      }
+    ]
+  },
+  {
+    "month": "June",
+    "monthNumber": 6,
+    "styleCategory": "Sapwood Cellars Clone",
+    "bjcpCode": "Hedge Trimmer Clone",
+    "entriesCount": 12,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "Justin Wilson",
+        "beerName": "",
+        "style": "Sapwood Cellars Clone"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "Jared Jarsocrak",
+        "beerName": "",
+        "style": "Sapwood Cellars Clone"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "Peter Werle",
+        "beerName": "",
+        "style": "Sapwood Cellars Clone"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "John Keough",
+        "beerName": "",
+        "style": "Sapwood Cellars Clone"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "Tom D’Asto",
+        "beerName": "",
+        "style": "Sapwood Cellars Clone"
+      }
+    ]
+  },
+  {
+    "month": "July",
+    "monthNumber": 7,
+    "styleCategory": "Session Beers",
+    "bjcpCode": "Anything under 4.5% ABV",
+    "entriesCount": 15,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "Ben Schwalb",
+        "beerName": "",
+        "style": "Session Beers"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "Craig Bryant",
+        "beerName": "",
+        "style": "Session Beers"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "Bob Baroncinni",
+        "beerName": "",
+        "style": "Session Beers"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "Justin Wilson",
+        "beerName": "",
+        "style": "Session Beers"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "John Keough",
+        "beerName": "",
+        "style": "Session Beers"
+      }
+    ]
+  },
+  {
+    "month": "September",
+    "monthNumber": 9,
+    "styleCategory": "Pale, Bitter / Hoppy",
+    "bjcpCode": "BJCP 5A-D, 12A-B, 18A-B",
+    "entriesCount": 10,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "Justin Wilson",
+        "beerName": "",
+        "style": "Pale, Bitter / Hoppy"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "John Jester",
+        "beerName": "",
+        "style": "Pale, Bitter / Hoppy"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "Brian England",
+        "beerName": "",
+        "style": "Pale, Bitter / Hoppy"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "Craig Bryant",
+        "beerName": "",
+        "style": "Pale, Bitter / Hoppy"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "Bob Baroncinni",
+        "beerName": "",
+        "style": "Pale, Bitter / Hoppy"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "Joe O’Keefe",
+        "beerName": "",
+        "style": "Pale, Bitter / Hoppy"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "Christa Chaiss",
+        "beerName": "",
+        "style": "Pale, Bitter / Hoppy"
+      }
+    ]
+  },
+  {
+    "month": "October",
+    "monthNumber": 10,
+    "styleCategory": "Amber / Dark, Malty",
+    "bjcpCode": "BJCP 2B-C, 3C-D, 6A-C, 8A-B",
+    "entriesCount": 9,
+    "standings": [
+      {
+        "place": 1,
+        "points": 10,
+        "brewer": "Bob Baroncinni",
+        "beerName": "",
+        "style": "Amber / Dark, Malty"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "Jason Heinen",
+        "beerName": "",
+        "style": "Amber / Dark, Malty"
+      },
+      {
+        "place": 2,
+        "points": 7,
+        "brewer": "Jared Jarsocrak",
+        "beerName": "",
+        "style": "Amber / Dark, Malty"
+      },
+      {
+        "place": 3,
+        "points": 5,
+        "brewer": "John Keough",
+        "beerName": "",
+        "style": "Amber / Dark, Malty"
+      },
+      {
+        "place": 4,
+        "points": 3,
+        "brewer": "John Jester",
+        "beerName": "",
+        "style": "Amber / Dark, Malty"
+      },
+      {
+        "place": 5,
+        "points": 2,
+        "brewer": "Craig Bryant",
+        "beerName": "",
+        "style": "Amber / Dark, Malty"
+      }
+    ]
+  }
+]
