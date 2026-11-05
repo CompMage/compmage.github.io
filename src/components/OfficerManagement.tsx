@@ -45,7 +45,12 @@ import {
   downloadStandingsCSV,
   parseStandingsCSVText,
   saveScheduleToServer,
-  saveMinutesToServer
+  saveMinutesToServer,
+  fetchMinutes,
+  fetchRecipes,
+  saveRecipesToServer,
+  fetchRoster,
+  saveRosterToServer
 } from '../services/api';
 
 interface OfficerManagementProps {
@@ -224,6 +229,15 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
     } catch {}
     return DEFAULT_MINUTES;
   });
+
+  // Sync minutes from server on mount
+  useEffect(() => {
+    fetchMinutes().then((serverMinutes) => {
+      if (serverMinutes && serverMinutes.length > 0) {
+        setMinutesList(serverMinutes);
+      }
+    });
+  }, []);
 
   const [isAddingMonth, setIsAddingMonth] = useState<boolean>(false);
   const [newMonthName, setNewMonthName] = useState<string>('');
@@ -837,12 +851,24 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
     return CLUB_RECIPES;
   });
 
+  // Sync recipes from server on mount
+  useEffect(() => {
+    fetchRecipes().then((serverRecipes) => {
+      if (serverRecipes && serverRecipes.length > 0) {
+        setRecipes(serverRecipes);
+      }
+    });
+  }, []);
+
   const [recipeSearch, setRecipeSearch] = useState('');
   const [recipeCategoryFilter, setRecipeCategoryFilter] = useState('all');
   const [viewingRecipe, setViewingRecipe] = useState<Recipe | null>(null);
 
   const saveRecipes = (updated: Recipe[]) => {
     setRecipes(updated);
+    saveRecipesToServer(updated).catch((err) => {
+      console.error('Failed to sync recipes to server:', err);
+    });
     try {
       localStorage.setItem('crabs_recipes_vault_v1', JSON.stringify(updated));
       window.dispatchEvent(new Event('crabs-recipes-updated'));

@@ -1,7 +1,7 @@
 import { MonthArchive, MonthlyPlacement } from '../data/competitionStandings';
 import { MonthlyComp } from '../data/competitionSchedule';
 import { SimpleMeetingNote } from '../data/defaultMinutes';
-import { MemberRegistration } from '../types';
+import { MemberRegistration, Recipe } from '../types';
 
 const API_BASE = '/api';
 
@@ -147,7 +147,42 @@ export async function saveRosterToServer(roster: MemberRegistration[]): Promise<
 }
 
 // ==========================================
-// 5. CSV EXPORT & IMPORT UTILITIES
+// 5. RECIPE VAULT API
+// ==========================================
+
+export async function fetchRecipes(): Promise<Recipe[] | null> {
+  try {
+    const res = await fetch(`${API_BASE}/recipes`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      try {
+        localStorage.setItem('crabs_recipes_vault_v1', JSON.stringify(data));
+      } catch {}
+      return data;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch recipes from server, using local cache:', err);
+  }
+  return null;
+}
+
+export async function saveRecipesToServer(recipes: Recipe[]): Promise<boolean> {
+  try {
+    const res = await fetch(`${API_BASE}/recipes`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recipes })
+    });
+    return res.ok;
+  } catch (err) {
+    console.error('Failed to save recipes to server:', err);
+    return false;
+  }
+}
+
+// ==========================================
+// 6. CSV EXPORT & IMPORT UTILITIES
 // ==========================================
 
 /**

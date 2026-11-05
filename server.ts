@@ -2,6 +2,11 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { DEFAULT_MINUTES } from './src/data/defaultMinutes';
+import { DEFAULT_MONTHLY_RESULTS } from './src/data/competitionStandings';
+import { DEFAULT_ANNUAL_SCHEDULE } from './src/data/competitionSchedule';
+import { CLUB_RECIPES } from './src/data/mockRecipes';
+import { DEFAULT_ROSTER } from './src/data/defaultRoster';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,6 +27,7 @@ const STANDINGS_JSON_FILE = path.join(DATA_DIR, 'standings.json');
 const STANDINGS_CSV_FILE = path.join(DATA_DIR, 'standings.csv');
 const SCHEDULE_JSON_FILE = path.join(DATA_DIR, 'schedule.json');
 const MINUTES_JSON_FILE = path.join(DATA_DIR, 'minutes.json');
+const RECIPES_JSON_FILE = path.join(DATA_DIR, 'recipes.json');
 const ROSTER_JSON_FILE = path.join(DATA_DIR, 'roster.json');
 
 // Helper to convert standings array to CSV string
@@ -81,6 +87,27 @@ function standingsToCSV(standings: any[]): string {
 }
 
 // Write standings to both JSON and CSV
+// Helper to read JSON file safely with fallback
+function readJSONFile(filePath: string, fallback: any): any {
+  if (fs.existsSync(filePath)) {
+    try {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+      if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(fallback) && fallback.length === 0) {
+        return parsed;
+      }
+      return parsed || fallback;
+    } catch (e) {
+      console.error(`Error reading ${filePath}:`, e);
+    }
+  }
+  return fallback;
+}
+
+// Write standings to both JSON and CSV
 function writeStandings(data: any[]): void {
   fs.writeFileSync(STANDINGS_JSON_FILE, JSON.stringify(data, null, 2), 'utf-8');
   fs.writeFileSync(STANDINGS_CSV_FILE, standingsToCSV(data), 'utf-8');
@@ -91,17 +118,30 @@ function readStandings(): any[] {
   if (fs.existsSync(STANDINGS_JSON_FILE)) {
     try {
       const content = fs.readFileSync(STANDINGS_JSON_FILE, 'utf-8');
-      return JSON.parse(content);
+      const parsed = JSON.parse(content);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     } catch (e) {
       console.error('Error reading standings.json, resetting', e);
     }
   }
-  return [];
+  return DEFAULT_MONTHLY_RESULTS;
 }
 
-// Initialize seed data if not present
+// Initialize seed data on disk if files do not exist
 if (!fs.existsSync(STANDINGS_JSON_FILE)) {
-  writeStandings([]);
+  writeStandings(DEFAULT_MONTHLY_RESULTS);
+}
+if (!fs.existsSync(SCHEDULE_JSON_FILE)) {
+  fs.writeFileSync(SCHEDULE_JSON_FILE, JSON.stringify(DEFAULT_ANNUAL_SCHEDULE, null, 2), 'utf-8');
+}
+if (!fs.existsSync(MINUTES_JSON_FILE)) {
+  fs.writeFileSync(MINUTES_JSON_FILE, JSON.stringify(DEFAULT_MINUTES, null, 2), 'utf-8');
+}
+if (!fs.existsSync(RECIPES_JSON_FILE)) {
+  fs.writeFileSync(RECIPES_JSON_FILE, JSON.stringify(CLUB_RECIPES, null, 2), 'utf-8');
+}
+if (!fs.existsSync(ROSTER_JSON_FILE)) {
+  fs.writeFileSync(ROSTER_JSON_FILE, JSON.stringify(DEFAULT_ROSTER, null, 2), 'utf-8');
 }
 
 // ==========================================
@@ -140,13 +180,8 @@ app.get('/api/standings/csv', (_req, res) => {
 
 // 2. Schedule Endpoints
 app.get('/api/schedule', (_req, res) => {
-  if (fs.existsSync(SCHEDULE_JSON_FILE)) {
-    try {
-      const data = JSON.parse(fs.readFileSync(SCHEDULE_JSON_FILE, 'utf-8'));
-      return res.json(data);
-    } catch {}
-  }
-  res.json(null);
+  const schedule = readJSONFile(SCHEDULE_JSON_FILE, DEFAULT_ANNUAL_SCHEDULE);
+  res.json(schedule);
 });
 
 app.post('/api/schedule', (req, res) => {
@@ -164,13 +199,8 @@ app.post('/api/schedule', (req, res) => {
 
 // 3. Minutes Endpoints
 app.get('/api/minutes', (_req, res) => {
-  if (fs.existsSync(MINUTES_JSON_FILE)) {
-    try {
-      const data = JSON.parse(fs.readFileSync(MINUTES_JSON_FILE, 'utf-8'));
-      return res.json(data);
-    } catch {}
-  }
-  res.json(null);
+  const minutes = readJSONFile(MINUTES_JSON_FILE, DEFAULT_MINUTES);
+  res.json(minutes);
 });
 
 app.post('/api/minutes', (req, res) => {
@@ -188,13 +218,8 @@ app.post('/api/minutes', (req, res) => {
 
 // 4. Roster Endpoints
 app.get('/api/roster', (_req, res) => {
-  if (fs.existsSync(ROSTER_JSON_FILE)) {
-    try {
-      const data = JSON.parse(fs.readFileSync(ROSTER_JSON_FILE, 'utf-8'));
-      return res.json(data);
-    } catch {}
-  }
-  res.json(null);
+  const roster = readJSONFile(ROSTER_JSON_FILE, DEFAULT_ROSTER);
+  res.json(roster);
 });
 
 app.post('/api/roster', (req, res) => {
@@ -205,6 +230,25 @@ app.post('/api/roster', (req, res) => {
     }
     fs.writeFileSync(ROSTER_JSON_FILE, JSON.stringify(roster, null, 2), 'utf-8');
     res.json({ success: true, count: roster.length });
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 5. Recipe Vault Endpoints
+app.get('/api/recipes', (_req, res) => {
+  const recipes = readJSONFile(RECIPES_JSON_FILE, CLUB_RECIPES);
+  res.json(recipes);
+});
+
+app.post('/api/recipes', (req, res) => {
+  try {
+    const recipes = Array.isArray(req.body) ? req.body : req.body?.recipes;
+    if (!Array.isArray(recipes)) {
+      return res.status(400).json({ error: 'recipes array required' });
+    }
+    fs.writeFileSync(RECIPES_JSON_FILE, JSON.stringify(recipes, null, 2), 'utf-8');
+    res.json({ success: true, count: recipes.length });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }

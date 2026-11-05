@@ -13,6 +13,7 @@ import {
   Printer
 } from 'lucide-react';
 import { SimpleMeetingNote, DEFAULT_MINUTES } from '../data/defaultMinutes';
+import { fetchMinutes } from '../services/api';
 
 export type { SimpleMeetingNote };
 
@@ -34,6 +35,18 @@ export const MeetingMinutes: React.FC = () => {
   const [isMinutesExpanded, setIsMinutesExpanded] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [copied, setCopied] = useState<boolean>(false);
+
+  // Sync with server on mount so changes on any device are visible
+  useEffect(() => {
+    fetchMinutes().then((serverMinutes) => {
+      if (serverMinutes && serverMinutes.length > 0) {
+        setMinutesList(serverMinutes);
+        if (!serverMinutes.some((m) => m.id === selectedMinuteId)) {
+          setSelectedMinuteId(serverMinutes[0].id);
+        }
+      }
+    });
+  }, []);
 
   // Sync with localStorage whenever updated in Officer Portal
   useEffect(() => {

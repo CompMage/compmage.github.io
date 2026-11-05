@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Beer, Search, Filter, BookOpen, Plus, X, Award, ExternalLink, ChevronRight, Trash2, FileText, Sparkles, Check } from 'lucide-react';
 import { CLUB_RECIPES } from '../data/mockRecipes';
 import { Recipe } from '../types';
+import { fetchRecipes, saveRecipesToServer } from '../services/api';
 
 export const RecipeVault: React.FC = () => {
   const [recipes, setRecipes] = useState<Recipe[]>(() => {
@@ -11,6 +12,15 @@ export const RecipeVault: React.FC = () => {
     } catch {}
     return CLUB_RECIPES;
   });
+
+  // Sync with server on mount so all devices see the shared recipe archive
+  useEffect(() => {
+    fetchRecipes().then((serverRecipes) => {
+      if (serverRecipes && serverRecipes.length > 0) {
+        setRecipes(serverRecipes);
+      }
+    });
+  }, []);
 
   useEffect(() => {
     const handleSync = () => {
@@ -157,6 +167,9 @@ export const RecipeVault: React.FC = () => {
 
     const updatedRecipes = [createdRecipe, ...recipes];
     setRecipes(updatedRecipes);
+    saveRecipesToServer(updatedRecipes).catch((err) => {
+      console.error('Failed to save recipe to server:', err);
+    });
     try {
       localStorage.setItem('crabs_recipes_vault_v1', JSON.stringify(updatedRecipes));
       window.dispatchEvent(new Event('crabs-recipes-updated'));

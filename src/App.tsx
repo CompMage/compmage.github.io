@@ -14,6 +14,7 @@ import { Footer } from './components/Footer';
 import { MemberRegistration } from './types';
 import { DEFAULT_MONTHLY_RESULTS, MonthArchive } from './data/competitionStandings';
 import { DEFAULT_ANNUAL_SCHEDULE, MonthlyComp } from './data/competitionSchedule';
+import { DEFAULT_ROSTER } from './data/defaultRoster';
 import {
   fetchStandings,
   saveStandingsToServer,
@@ -36,7 +37,13 @@ export default function App() {
   });
   const [activeTab, setActiveTab] = useState<string>('about');
   const [isOfficerModalOpen, setIsOfficerModalOpen] = useState<boolean>(false);
-  const [roster, setRoster] = useState<MemberRegistration[]>([]);
+  const [roster, setRoster] = useState<MemberRegistration[]>(() => {
+    try {
+      const stored = localStorage.getItem('crabs_member_roster_v1');
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return DEFAULT_ROSTER;
+  });
 
   // Persistent competition results hoisted to root for live synchronization (reset for active season)
   const [competitionResults, setCompetitionResults] = useState<MonthArchive[]>(() => {
@@ -94,7 +101,7 @@ export default function App() {
     });
 
     fetchRoster().then((serverRoster) => {
-      if (serverRoster !== null && serverRoster.length > 0) {
+      if (serverRoster !== null) {
         setRoster(serverRoster);
       }
     });
@@ -133,71 +140,21 @@ export default function App() {
     returnToSite();
   };
 
-  // Load persistent roster on mount
-  useEffect(() => {
+  const handleMemberRegistered = async (newMember: MemberRegistration) => {
+    let base = roster;
     try {
-      const stored = localStorage.getItem('crabs_member_roster_v1');
-      if (stored) {
-        setRoster(JSON.parse(stored));
-      } else {
-        // Initial seed sample so officers immediately see the roster layout
-        const initialSeed: MemberRegistration[] = [
-          {
-            id: 'CRABS-1981',
-            createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
-            firstName: 'David',
-            lastName: 'Miller',
-            email: 'dmiller@example.com',
-            phone: '410-555-0142',
-            brewingExperience: '10+ years (Homebrew veteran / Pro)',
-            equipment: '3-Vessel All-Grain (Coolers / Keggle)',
-            attendedMeeting: 'yes',
-            isFamily: false,
-            familyMembers: [],
-            paymentMethod: 'paypal',
-            duesAmount: 25,
-            status: 'verified'
-          },
-          {
-            id: 'CRABS-2048',
-            createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-            firstName: 'Elena',
-            lastName: 'Rostova',
-            email: 'elena.brews@example.com',
-            brewingExperience: '3-5 years (Regular homebrewer)',
-            equipment: 'All-in-One Electric System (Grainfather / Anvil / Clawhammer)',
-            attendedMeeting: 'first_time',
-            isFamily: true,
-            familyMembers: [
-              {
-                id: 'fam_1',
-                name: 'Alex Rostova',
-                email: 'alex.rostov@example.com',
-                relationship: 'Spouse / Partner'
-              }
-            ],
-            paymentMethod: 'cash_at_meeting',
-            duesAmount: 40,
-            status: 'pending'
-          }
-        ];
-        setRoster(initialSeed);
-        localStorage.setItem('crabs_member_roster_v1', JSON.stringify(initialSeed));
+      const serverCurrent = await fetchRoster();
+      if (serverCurrent && Array.isArray(serverCurrent)) {
+        base = serverCurrent;
       }
-    } catch (e) {
-      console.error('Failed to load roster from localStorage', e);
-    }
-  }, []);
+    } catch {}
 
-  const handleMemberRegistered = (newMember: MemberRegistration) => {
-    setRoster((prev) => {
-      const updated = [newMember, ...prev];
-      try {
-        localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
-      } catch {}
-      saveRosterToServer(updated);
-      return updated;
-    });
+    const updated = [newMember, ...base.filter((m) => m.id !== newMember.id)];
+    setRoster(updated);
+    try {
+      localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
+    } catch {}
+    saveRosterToServer(updated);
   };
 
   const handleUpdateRoster = (updated: MemberRegistration[]) => {
