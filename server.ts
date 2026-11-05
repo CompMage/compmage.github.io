@@ -2,11 +2,6 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { DEFAULT_MINUTES } from './src/data/defaultMinutes';
-import { DEFAULT_MONTHLY_RESULTS } from './src/data/competitionStandings';
-import { DEFAULT_ANNUAL_SCHEDULE } from './src/data/competitionSchedule';
-import { CLUB_RECIPES } from './src/data/mockRecipes';
-import { DEFAULT_ROSTER } from './src/data/defaultRoster';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -115,33 +110,7 @@ function writeStandings(data: any[]): void {
 
 // Read standings from JSON or initialize
 function readStandings(): any[] {
-  if (fs.existsSync(STANDINGS_JSON_FILE)) {
-    try {
-      const content = fs.readFileSync(STANDINGS_JSON_FILE, 'utf-8');
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-    } catch (e) {
-      console.error('Error reading standings.json, resetting', e);
-    }
-  }
-  return DEFAULT_MONTHLY_RESULTS;
-}
-
-// Initialize seed data on disk if files do not exist
-if (!fs.existsSync(STANDINGS_JSON_FILE)) {
-  writeStandings(DEFAULT_MONTHLY_RESULTS);
-}
-if (!fs.existsSync(SCHEDULE_JSON_FILE)) {
-  fs.writeFileSync(SCHEDULE_JSON_FILE, JSON.stringify(DEFAULT_ANNUAL_SCHEDULE, null, 2), 'utf-8');
-}
-if (!fs.existsSync(MINUTES_JSON_FILE)) {
-  fs.writeFileSync(MINUTES_JSON_FILE, JSON.stringify(DEFAULT_MINUTES, null, 2), 'utf-8');
-}
-if (!fs.existsSync(RECIPES_JSON_FILE)) {
-  fs.writeFileSync(RECIPES_JSON_FILE, JSON.stringify(CLUB_RECIPES, null, 2), 'utf-8');
-}
-if (!fs.existsSync(ROSTER_JSON_FILE)) {
-  fs.writeFileSync(ROSTER_JSON_FILE, JSON.stringify(DEFAULT_ROSTER, null, 2), 'utf-8');
+  return readJSONFile(STANDINGS_JSON_FILE, []);
 }
 
 // ==========================================
@@ -180,7 +149,7 @@ app.get('/api/standings/csv', (_req, res) => {
 
 // 2. Schedule Endpoints
 app.get('/api/schedule', (_req, res) => {
-  const schedule = readJSONFile(SCHEDULE_JSON_FILE, DEFAULT_ANNUAL_SCHEDULE);
+  const schedule = readJSONFile(SCHEDULE_JSON_FILE, []);
   res.json(schedule);
 });
 
@@ -199,7 +168,7 @@ app.post('/api/schedule', (req, res) => {
 
 // 3. Minutes Endpoints
 app.get('/api/minutes', (_req, res) => {
-  const minutes = readJSONFile(MINUTES_JSON_FILE, DEFAULT_MINUTES);
+  const minutes = readJSONFile(MINUTES_JSON_FILE, []);
   res.json(minutes);
 });
 
@@ -218,7 +187,7 @@ app.post('/api/minutes', (req, res) => {
 
 // 4. Roster Endpoints
 app.get('/api/roster', (_req, res) => {
-  const roster = readJSONFile(ROSTER_JSON_FILE, DEFAULT_ROSTER);
+  const roster = readJSONFile(ROSTER_JSON_FILE, []);
   res.json(roster);
 });
 
@@ -237,7 +206,7 @@ app.post('/api/roster', (req, res) => {
 
 // 5. Recipe Vault Endpoints
 app.get('/api/recipes', (_req, res) => {
-  const recipes = readJSONFile(RECIPES_JSON_FILE, CLUB_RECIPES);
+  const recipes = readJSONFile(RECIPES_JSON_FILE, []);
   res.json(recipes);
 });
 
