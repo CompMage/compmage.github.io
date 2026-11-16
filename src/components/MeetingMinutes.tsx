@@ -13,23 +13,14 @@ import {
   Printer
 } from 'lucide-react';
 import { SimpleMeetingNote, DEFAULT_MINUTES } from '../data/defaultMinutes';
-import { fetchMinutes } from '../services/api';
+import { fetchMinutes, readCachedList, STORAGE_KEYS, SYNC_EVENTS } from '../services/api';
 
 export type { SimpleMeetingNote };
 
 export const MeetingMinutes: React.FC = () => {
-  const [minutesList, setMinutesList] = useState<SimpleMeetingNote[]>(() => {
-    try {
-      localStorage.removeItem('crabs_meeting_minutes_v1');
-      const stored = localStorage.getItem('crabs_meeting_minutes_v2');
-      if (stored) {
-        return JSON.parse(stored);
-      }
-    } catch {
-      // fallback
-    }
-    return DEFAULT_MINUTES;
-  });
+  const [minutesList, setMinutesList] = useState<SimpleMeetingNote[]>(() =>
+    readCachedList(STORAGE_KEYS.MINUTES, DEFAULT_MINUTES, STORAGE_KEYS.LEGACY_MINUTES)
+  );
 
   const [selectedMinuteId, setSelectedMinuteId] = useState<string>('oct-2026');
   const [isMinutesExpanded, setIsMinutesExpanded] = useState<boolean>(true);
@@ -51,25 +42,18 @@ export const MeetingMinutes: React.FC = () => {
   // Sync with localStorage whenever updated in Officer Portal
   useEffect(() => {
     const handleSync = () => {
-      try {
-        const stored = localStorage.getItem('crabs_meeting_minutes_v2');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          setMinutesList(parsed);
-          if (!parsed.some((m: SimpleMeetingNote) => m.id === selectedMinuteId) && parsed.length > 0) {
-            setSelectedMinuteId(parsed[0].id);
-          }
-        }
-      } catch {
-        // ignore
+      const parsed = readCachedList(STORAGE_KEYS.MINUTES, DEFAULT_MINUTES);
+      setMinutesList(parsed);
+      if (!parsed.some((m) => m.id === selectedMinuteId) && parsed.length > 0) {
+        setSelectedMinuteId(parsed[0].id);
       }
     };
 
     window.addEventListener('storage', handleSync);
-    window.addEventListener('crabs-minutes-updated', handleSync);
+    window.addEventListener(SYNC_EVENTS.MINUTES, handleSync);
     return () => {
       window.removeEventListener('storage', handleSync);
-      window.removeEventListener('crabs-minutes-updated', handleSync);
+      window.removeEventListener(SYNC_EVENTS.MINUTES, handleSync);
     };
   }, [selectedMinuteId]);
 

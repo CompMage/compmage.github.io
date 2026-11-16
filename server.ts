@@ -1,4 +1,5 @@
 import express from 'express';
+import type { Request, Response } from 'express';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -25,7 +26,44 @@ const MINUTES_JSON_FILE = path.join(DATA_DIR, 'minutes.json');
 const RECIPES_JSON_FILE = path.join(DATA_DIR, 'recipes.json');
 const ROSTER_JSON_FILE = path.join(DATA_DIR, 'roster.json');
 
-// Helper to convert standings array to CSV string
+// RFC-4180 CSV field escaping to preserve quotes, commas, and newlines safely
+function escapeCSVField(value: unknown): string {
+  const str = value === undefined || value === null ? '' : String(value);
+  return `"${str.replace(/"/g, '""')}"`;
+}
+
+// Atomic write (temp file -> rename) to prevent partial/corrupted files on interrupted writes
+function writeFileAtomic(filePath: string, content: string): void {
+  const tmpPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+  try {
+    fs.writeFileSync(tmpPath, content, 'utf-8');
+    fs.renameSync(tmpPath, filePath);
+  } catch (err) {
+    try {
+      if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+    } catch {}
+    throw err;
+  }
+}
+
+// Read JSON array safely with fallback
+function readJSONArray<T = any>(filePath: string, fallback: T[] = []): T[] {
+  if (!fs.existsSync(filePath)) return fallback;
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const parsed = JSON.parse(content);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch (err) {
+    console.error(`Error reading ${filePath}:`, err);
+    return fallback;
+  }
+}
+
+function writeJSONAtomic(filePath: string, data: unknown[]): void {
+  writeFileAtomic(filePath, JSON.stringify(data, null, 2));
+}
+
+// Convert standings array to escaped CSV string
 function standingsToCSV(standings: any[]): string {
   const headers = [
     'Month',
@@ -43,35 +81,28 @@ function standingsToCSV(standings: any[]): string {
   const rows: string[] = [];
 
   standings.forEach((monthArchive) => {
+    const month = escapeCSVField(monthArchive.month ?? '');
+    const monthNum = monthArchive.monthNumber ?? '';
+    const styleCat = escapeCSVField(monthArchive.styleCategory ?? '');
+    const bjcp = escapeCSVField(monthArchive.bjcpCode ?? '');
+    const entries = monthArchive.entriesCount ?? 0;
+
     if (!monthArchive.standings || monthArchive.standings.length === 0) {
-      rows.push(
-        [
-          `"${monthArchive.month}"`,
-          monthArchive.monthNumber || '',
-          `"${monthArchive.styleCategory || ''}"`,
-          `"${monthArchive.bjcpCode || ''}"`,
-          monthArchive.entriesCount || 0,
-          '',
-          '',
-          '',
-          '',
-          ''
-        ].join(',')
-      );
+      rows.push([month, monthNum, styleCat, bjcp, entries, '', '', '', '', ''].join(','));
     } else {
       monthArchive.standings.forEach((placement: any) => {
         rows.push(
           [
-            `"${monthArchive.month}"`,
-            monthArchive.monthNumber || '',
-            `"${monthArchive.styleCategory || ''}"`,
-            `"${monthArchive.bjcpCode || ''}"`,
-            monthArchive.entriesCount || 0,
-            placement.place || '',
-            placement.points || '',
-            `"${placement.brewer || ''}"`,
-            `"${placement.beerName || ''}"`,
-            `"${placement.style || ''}"`
+            month,
+            monthNum,
+            styleCat,
+            bjcp,
+            entries,
+            placement.place ?? '',
+            placement.points ?? '',
+            escapeCSVField(placement.brewer ?? ''),
+            escapeCSVField(placement.beerName ?? ''),
+            escapeCSVField(placement.style ?? '')
           ].join(',')
         );
       });
@@ -81,46 +112,46 @@ function standingsToCSV(standings: any[]): string {
   return [headers.join(','), ...rows].join('\n') + '\n';
 }
 
-// Write standings to both JSON and CSV
-// Helper to read JSON file safely with fallback
-function readJSONFile(filePath: string, fallback: any): any {
-  if (fs.existsSync(filePath)) {
-    try {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const parsed = JSON.parse(content);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
-      }
-      if (Array.isArray(parsed) && parsed.length === 0 && Array.isArray(fallback) && fallback.length === 0) {
-        return parsed;
-      }
-      return parsed || fallback;
-    } catch (e) {
-      console.error(`Error reading ${filePath}:`, e);
-    }
-  }
-  return fallback;
-}
-
-// Write standings to both JSON and CSV
 function writeStandings(data: any[]): void {
-  fs.writeFileSync(STANDINGS_JSON_FILE, JSON.stringify(data, null, 2), 'utf-8');
-  fs.writeFileSync(STANDINGS_CSV_FILE, standingsToCSV(data), 'utf-8');
+  writeJSONAtomic(STANDINGS_JSON_FILE, data);
+  writeFileAtomic(STANDINGS_CSV_FILE, standingsToCSV(data));
 }
 
-// Read standings from JSON or initialize
-function readStandings(): any[] {
-  return readJSONFile(STANDINGS_JSON_FILE, []);
+// Reusable flat-file GET/POST route factory
+function registerArrayEndpoint(routePath: string, filePath: string, bodyKey: string): void {
+  app.get(routePath, (_req: Request, res: Response) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.json(readJSONArray(filePath, []));
+  });
+
+  app.post(routePath, (req: Request, res: Response) => {
+    try {
+      const payload = Array.isArray(req.body) ? req.body : req.body?.[bodyKey];
+      if (!Array.isArray(payload)) {
+        return res.status(400).json({ error: `${bodyKey} array required` });
+      }
+      writeJSONAtomic(filePath, payload);
+      res.setHeader('Cache-Control', 'no-store');
+      res.json({ success: true, count: payload.length });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to save data' });
+    }
+  });
 }
 
 // ==========================================
 // API ROUTES
 // ==========================================
 
-// 1. Standings Endpoints
+app.get('/api/health', (_req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  res.json({ status: 'ok', uptime: Math.round(process.uptime()) });
+});
+
+// 1. Standings Endpoints (writes both JSON & CSV atomically)
 app.get('/api/standings', (_req, res) => {
-  const data = readStandings();
-  res.json(data);
+  res.setHeader('Cache-Control', 'no-store');
+  res.json(readJSONArray(STANDINGS_JSON_FILE, []));
 });
 
 app.post('/api/standings', (req, res) => {
@@ -130,101 +161,34 @@ app.post('/api/standings', (req, res) => {
       return res.status(400).json({ error: 'standings array required' });
     }
     writeStandings(standings);
+    res.setHeader('Cache-Control', 'no-store');
     res.json({ success: true, count: standings.length });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: err?.message || 'Failed to save standings' });
   }
 });
 
-// Download server CSV
 app.get('/api/standings/csv', (_req, res) => {
   if (!fs.existsSync(STANDINGS_CSV_FILE)) {
-    const data = readStandings();
-    writeStandings(data);
+    writeStandings(readJSONArray(STANDINGS_JSON_FILE, []));
   }
-  res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', `attachment; filename=CRABS_Standings_${new Date().toISOString().slice(0, 10)}.csv`);
+  res.setHeader('Cache-Control', 'no-store');
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+  res.setHeader(
+    'Content-Disposition',
+    `attachment; filename=CRABS_Standings_${new Date().toISOString().slice(0, 10)}.csv`
+  );
   res.sendFile(STANDINGS_CSV_FILE);
 });
 
-// 2. Schedule Endpoints
-app.get('/api/schedule', (_req, res) => {
-  const schedule = readJSONFile(SCHEDULE_JSON_FILE, []);
-  res.json(schedule);
-});
-
-app.post('/api/schedule', (req, res) => {
-  try {
-    const schedule = Array.isArray(req.body) ? req.body : req.body?.schedule;
-    if (!Array.isArray(schedule)) {
-      return res.status(400).json({ error: 'schedule array required' });
-    }
-    fs.writeFileSync(SCHEDULE_JSON_FILE, JSON.stringify(schedule, null, 2), 'utf-8');
-    res.json({ success: true, count: schedule.length });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 3. Minutes Endpoints
-app.get('/api/minutes', (_req, res) => {
-  const minutes = readJSONFile(MINUTES_JSON_FILE, []);
-  res.json(minutes);
-});
-
-app.post('/api/minutes', (req, res) => {
-  try {
-    const minutes = Array.isArray(req.body) ? req.body : req.body?.minutes;
-    if (!Array.isArray(minutes)) {
-      return res.status(400).json({ error: 'minutes array required' });
-    }
-    fs.writeFileSync(MINUTES_JSON_FILE, JSON.stringify(minutes, null, 2), 'utf-8');
-    res.json({ success: true, count: minutes.length });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 4. Roster Endpoints
-app.get('/api/roster', (_req, res) => {
-  const roster = readJSONFile(ROSTER_JSON_FILE, []);
-  res.json(roster);
-});
-
-app.post('/api/roster', (req, res) => {
-  try {
-    const roster = Array.isArray(req.body) ? req.body : req.body?.roster;
-    if (!Array.isArray(roster)) {
-      return res.status(400).json({ error: 'roster array required' });
-    }
-    fs.writeFileSync(ROSTER_JSON_FILE, JSON.stringify(roster, null, 2), 'utf-8');
-    res.json({ success: true, count: roster.length });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// 5. Recipe Vault Endpoints
-app.get('/api/recipes', (_req, res) => {
-  const recipes = readJSONFile(RECIPES_JSON_FILE, []);
-  res.json(recipes);
-});
-
-app.post('/api/recipes', (req, res) => {
-  try {
-    const recipes = Array.isArray(req.body) ? req.body : req.body?.recipes;
-    if (!Array.isArray(recipes)) {
-      return res.status(400).json({ error: 'recipes array required' });
-    }
-    fs.writeFileSync(RECIPES_JSON_FILE, JSON.stringify(recipes, null, 2), 'utf-8');
-    res.json({ success: true, count: recipes.length });
-  } catch (err: any) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// 2-5. Schedule, Minutes, Roster & Recipe Vault Endpoints
+registerArrayEndpoint('/api/schedule', SCHEDULE_JSON_FILE, 'schedule');
+registerArrayEndpoint('/api/minutes', MINUTES_JSON_FILE, 'minutes');
+registerArrayEndpoint('/api/roster', ROSTER_JSON_FILE, 'roster');
+registerArrayEndpoint('/api/recipes', RECIPES_JSON_FILE, 'recipes');
 
 // ==========================================
-// VITE INTEGRATION
+// VITE INTEGRATION & STATIC HOSTING
 // ==========================================
 async function startServer() {
   const isProd = process.env.NODE_ENV === 'production';
@@ -242,15 +206,38 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.resolve(__dirname, 'dist');
-    app.use(express.static(distPath));
+    const assetsPath = path.join(distPath, 'assets');
+
+    // Long-lived immutable cache for fingerprinted Vite assets
+    if (fs.existsSync(assetsPath)) {
+      app.use(
+        '/assets',
+        express.static(assetsPath, {
+          maxAge: '1y',
+          immutable: true
+        })
+      );
+    }
+
+    app.use(
+      express.static(distPath, {
+        index: false,
+        maxAge: '1h'
+      })
+    );
+
     app.get('*', (_req, res) => {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
 
   app.listen(Number(PORT), '0.0.0.0', () => {
-    console.log(`[C.R.A.B.S.] Full-stack server running on http://0.0.0.0:${PORT} (${isProd ? 'production' : 'development'})`);
+    console.log(
+      `[C.R.A.B.S.] Full-stack server running on http://0.0.0.0:${PORT} (${isProd ? 'production' : 'development'})`
+    );
   });
 }
 
 startServer();
+

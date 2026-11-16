@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
 import { AboutMeetings } from './components/AboutMeetings';
@@ -7,15 +7,16 @@ import { JoinSection } from './components/JoinSection';
 import { BrewingTools } from './components/BrewingTools';
 import { RecipeVault } from './components/RecipeVault';
 import { SocialMediaSection } from './components/SocialMediaSection';
-import { OfficerRosterModal } from './components/OfficerRosterModal';
-import { OfficerManagement } from './components/OfficerManagement';
-import { OfficerLoginGate } from './components/OfficerLoginGate';
 import { Footer } from './components/Footer';
 import { MemberRegistration } from './types';
 import { DEFAULT_MONTHLY_RESULTS, MonthArchive } from './data/competitionStandings';
 import { DEFAULT_ANNUAL_SCHEDULE, MonthlyComp } from './data/competitionSchedule';
 import { DEFAULT_ROSTER } from './data/defaultRoster';
 import {
+  STORAGE_KEYS,
+  SYNC_EVENTS,
+  readCachedList,
+  writeCachedList,
   fetchStandings,
   saveStandingsToServer,
   fetchSchedule,
@@ -24,87 +25,73 @@ import {
   saveRosterToServer
 } from './services/api';
 
+// Code-split admin portal & modal chunks so public visitors don't download officer bundle upfront
+const OfficerRosterModal = lazy(() =>
+  import('./components/OfficerRosterModal').then((m) => ({ default: m.OfficerRosterModal }))
+);
+const OfficerManagement = lazy(() =>
+  import('./components/OfficerManagement').then((m) => ({ default: m.OfficerManagement }))
+);
+const OfficerLoginGate = lazy(() =>
+  import('./components/OfficerLoginGate').then((m) => ({ default: m.OfficerLoginGate }))
+);
+
 export default function App() {
   const [currentPage, setCurrentPage] = useState<'site' | 'officers'>(() => {
     return window.location.hash === '#officers' || window.location.hash === '#management' ? 'officers' : 'site';
   });
   const [isOfficerAuthenticated, setIsOfficerAuthenticated] = useState<boolean>(() => {
     try {
-      return sessionStorage.getItem('crabs_officer_authenticated') === 'true';
+      return sessionStorage.getItem(STORAGE_KEYS.OFFICER_AUTH) === 'true';
     } catch {
       return false;
     }
   });
   const [activeTab, setActiveTab] = useState<string>('about');
   const [isOfficerModalOpen, setIsOfficerModalOpen] = useState<boolean>(false);
-  const [roster, setRoster] = useState<MemberRegistration[]>(() => {
-    try {
-      const stored = localStorage.getItem('crabs_member_roster_v1');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return DEFAULT_ROSTER;
-  });
 
-  // Persistent competition results hoisted to root for live synchronization (reset for active season)
-  const [competitionResults, setCompetitionResults] = useState<MonthArchive[]>(() => {
-    try {
-      localStorage.removeItem('crabs_competition_standings_v1'); // purge stale mock standings
-      const stored = localStorage.getItem('crabs_competition_standings_v2');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return DEFAULT_MONTHLY_RESULTS;
-  });
+  const [roster, setRoster] = useState<MemberRegistration[]>(() =>
+    readCachedList(STORAGE_KEYS.ROSTER, DEFAULT_ROSTER, undefined, true)
+  );
+
+  // Persistent competition results hoisted to root for live synchronization
+  const [competitionResults, setCompetitionResults] = useState<MonthArchive[]>(() =>
+    readCachedList(STORAGE_KEYS.STANDINGS, DEFAULT_MONTHLY_RESULTS, STORAGE_KEYS.LEGACY_STANDINGS, true)
+  );
 
   const handleUpdateCompetitionResults = (updated: MonthArchive[]) => {
     setCompetitionResults(updated);
-    try {
-      localStorage.setItem('crabs_competition_standings_v2', JSON.stringify(updated));
-      window.dispatchEvent(new Event('crabs-standings-updated'));
-    } catch (e) {
-      console.error(e);
-    }
+    writeCachedList(STORAGE_KEYS.STANDINGS, updated, SYNC_EVENTS.STANDINGS);
     saveStandingsToServer(updated);
   };
 
   // Persistent competition schedule hoisted to root for live synchronization
-  const [competitionSchedule, setCompetitionSchedule] = useState<MonthlyComp[]>(() => {
-    try {
-      const stored = localStorage.getItem('crabs_competition_schedule_v1');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return DEFAULT_ANNUAL_SCHEDULE;
-  });
+  const [competitionSchedule, setCompetitionSchedule] = useState<MonthlyComp[]>(() =>
+    readCachedList(STORAGE_KEYS.SCHEDULE, DEFAULT_ANNUAL_SCHEDULE)
+  );
 
   const handleUpdateCompetitionSchedule = (updated: MonthlyComp[]) => {
-    setCompetitionSchedule(updated);
-    try {
-      localStorage.setItem('crabs_competition_schedule_v1', JSON.stringify(updated));
-      window.dispatchEvent(new Event('crabs-schedule-updated'));
-    } catch (e) {
-      console.error(e);
-    }
-    saveScheduleToServer(updated);
+    const nextSchedule = updated.length > 0 ? updated : DEFAULT_ANNUAL_SCHEDULE;
+    setCompetitionSchedule(nextSchedule);
+    writeCachedList(STORAGE_KEYS.SCHEDULE, nextSchedule, SYNC_EVENTS.SCHEDULE);
+    saveScheduleToServer(nextSchedule);
   };
 
-  // Sync with full-stack server on mount so changes on any device are visible
+  // Sync with full-stack server in parallel on mount so changes on any device are visible
   useEffect(() => {
-    fetchStandings().then((serverStandings) => {
-      if (serverStandings !== null) {
-        setCompetitionResults(serverStandings);
+    Promise.all([fetchStandings(), fetchSchedule(), fetchRoster()]).then(
+      ([serverStandings, serverSchedule, serverRoster]) => {
+        if (serverStandings !== null) {
+          setCompetitionResults(serverStandings);
+        }
+        if (serverSchedule !== null && serverSchedule.length > 0) {
+          setCompetitionSchedule(serverSchedule);
+        }
+        if (serverRoster !== null) {
+          setRoster(serverRoster);
+        }
       }
-    });
-
-    fetchSchedule().then((serverSchedule) => {
-      if (serverSchedule !== null && serverSchedule.length > 0) {
-        setCompetitionSchedule(serverSchedule);
-      }
-    });
-
-    fetchRoster().then((serverRoster) => {
-      if (serverRoster !== null) {
-        setRoster(serverRoster);
-      }
-    });
+    );
   }, []);
 
   // Hash listener for direct navigation / bookmarks
@@ -134,7 +121,7 @@ export default function App() {
 
   const handleOfficerLogout = () => {
     try {
-      sessionStorage.removeItem('crabs_officer_authenticated');
+      sessionStorage.removeItem(STORAGE_KEYS.OFFICER_AUTH);
     } catch {}
     setIsOfficerAuthenticated(false);
     returnToSite();
@@ -151,23 +138,21 @@ export default function App() {
 
     const updated = [newMember, ...base.filter((m) => m.id !== newMember.id)];
     setRoster(updated);
-    try {
-      localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
-    } catch {}
+    writeCachedList(STORAGE_KEYS.ROSTER, updated);
     saveRosterToServer(updated);
   };
 
   const handleUpdateRoster = (updated: MemberRegistration[]) => {
     setRoster(updated);
-    try {
-      localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
-    } catch {}
+    writeCachedList(STORAGE_KEYS.ROSTER, updated);
     saveRosterToServer(updated);
   };
 
   const handleClearRoster = () => {
     setRoster([]);
-    localStorage.removeItem('crabs_member_roster_v1');
+    try {
+      localStorage.removeItem(STORAGE_KEYS.ROSTER);
+    } catch {}
     saveRosterToServer([]);
   };
 
@@ -186,26 +171,26 @@ export default function App() {
   };
 
   if (currentPage === 'officers') {
-    if (!isOfficerAuthenticated) {
-      return (
-        <OfficerLoginGate
-          onSuccess={() => setIsOfficerAuthenticated(true)}
-          onBackToSite={returnToSite}
-        />
-      );
-    }
-
     return (
-      <OfficerManagement
-        onBackToSite={returnToSite}
-        onLogout={handleOfficerLogout}
-        roster={roster}
-        onUpdateRoster={handleUpdateRoster}
-        competitionResults={competitionResults}
-        onUpdateCompetitionResults={handleUpdateCompetitionResults}
-        schedule={competitionSchedule}
-        onUpdateSchedule={handleUpdateCompetitionSchedule}
-      />
+      <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+        {!isOfficerAuthenticated ? (
+          <OfficerLoginGate
+            onSuccess={() => setIsOfficerAuthenticated(true)}
+            onBackToSite={returnToSite}
+          />
+        ) : (
+          <OfficerManagement
+            onBackToSite={returnToSite}
+            onLogout={handleOfficerLogout}
+            roster={roster}
+            onUpdateRoster={handleUpdateRoster}
+            competitionResults={competitionResults}
+            onUpdateCompetitionResults={handleUpdateCompetitionResults}
+            schedule={competitionSchedule}
+            onUpdateSchedule={handleUpdateCompetitionSchedule}
+          />
+        )}
+      </Suspense>
     );
   }
 
@@ -252,14 +237,18 @@ export default function App() {
         onOpenOfficerPortal={goToOfficerPortal}
       />
 
-      {/* Officer Roster Modal */}
-      <OfficerRosterModal
-        isOpen={isOfficerModalOpen}
-        onClose={() => setIsOfficerModalOpen(false)}
-        roster={roster}
-        onClearRoster={handleClearRoster}
-        onUpdateRoster={handleUpdateRoster}
-      />
+      {/* Officer Roster Modal (lazy loaded only when opened) */}
+      {isOfficerModalOpen && (
+        <Suspense fallback={null}>
+          <OfficerRosterModal
+            isOpen={isOfficerModalOpen}
+            onClose={() => setIsOfficerModalOpen(false)}
+            roster={roster}
+            onClearRoster={handleClearRoster}
+            onUpdateRoster={handleUpdateRoster}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }

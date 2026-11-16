@@ -3,7 +3,6 @@ import { Beer, MapPin, ArrowRight, Award, Maximize2, X } from 'lucide-react';
 
 interface HeroProps {
   onJoinClick: () => void;
-  onToolsClick?: () => void;
   onCompetitionsClick?: () => void;
 }
 

@@ -41,7 +41,8 @@ The application is a **full-stack React + Express SPA** (no SQL or external data
 | **`tsconfig.json`** | TypeScript compiler configuration | Targets `ES2022`, `moduleResolution: "bundler"`, `jsx: "react-jsx"`, `noEmit: true`. Excludes `dist`. |
 | **`vite.config.ts`** | Vite bundler configuration | Enables `@vitejs/plugin-react` and `@tailwindcss/vite`, sets `base: './'`, aliases `@` to project root, and configures HMR flag (`DISABLE_HMR`). **Do not mount Express here**—Express runs in `server.ts`. |
 | **`index.html`** | HTML shell & metadata | Loads Google Fonts (`Plus Jakarta Sans`, `JetBrains Mono`), sets club favicon (`/assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`), and mounts React via `<script type="module" src="/src/main.tsx">`. |
-| **`server.ts`** | Full-stack Express backend & SPA host | Serves REST endpoints (`/api/standings`, `/api/standings/csv`, `/api/schedule`, `/api/minutes`, `/api/roster`, `/api/recipes`), converts standings to CSV on every write, and serves either `vite.middlewares` (dev) or `/dist` (prod). **Constraint:** Must remain self-contained (must NOT import client `.ts` files from `src/` so `node server.ts` works natively in ESM without a bundler). |
+| **`server.ts`** | Full-stack Express backend & SPA host | Serves REST endpoints (`/api/health`, `/api/standings`, `/api/standings/csv`, `/api/schedule`, `/api/minutes`, `/api/roster`, `/api/recipes`) via a reusable route factory with `Cache-Control: no-store`, atomic temp-file-then-rename writes, RFC-4180 CSV escaping, immutable asset caching, and serves either `vite.middlewares` (dev) or `/dist` (prod). **Constraint:** Must remain self-contained (must NOT import client `.ts` files from `src/` so `node server.ts` works natively in ESM without a bundler). |
+| **`.dockerignore`** | Docker build exclusion rules | Excludes `node_modules`, `dist`, `.git`, `.aistudio`, `.env*`, logs, and `*.tmp` files from Docker build contexts. |
 
 ---
 
@@ -66,8 +67,6 @@ The application is a **full-stack React + Express SPA** (no SQL or external data
 | :--- | :--- | :--- |
 | **`public/assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`** | Official C.R.A.B.S. bottle-cap emblem & favicon | Referenced by `index.html`, `Navbar.tsx`, `Hero.tsx`, `Footer.tsx`, `OfficerLoginGate.tsx`, and `OfficerManagement.tsx`. |
 
-*(Note: Any other `.zip`, `.config`, `.txt`, `.jpg`, `.png`, or `.csv` files in `/public` are historical deployment/upload artifacts and are not imported by the running application.)*
-
 ---
 
 ## 5. Frontend Entry & Core Infrastructure (`/src/`)
@@ -78,9 +77,9 @@ The application is a **full-stack React + Express SPA** (no SQL or external data
 
 ### Root State & Routing
 - **`src/App.tsx`**:
-  - **Page Routing:** Uses `window.location.hash` (`#officers` / `#management` vs public `#` site) to switch between the public landing page and the Officer Portal (`OfficerLoginGate` -> `OfficerManagement`).
-  - **Authentication State:** Reads `sessionStorage.getItem('crabs_officer_authenticated')` so the portal stays unlocked only for the current browser tab session or until logout.
-  - **Shared State Hoisted to Root:** Manages `roster`, `competitionResults`, and `competitionSchedule`. On mount, fetches live server data via `fetchStandings()`, `fetchSchedule()`, and `fetchRoster()` from `src/services/api.ts`.
+  - **Page Routing & Code Splitting:** Uses `window.location.hash` (`#officers` / `#management` vs public `#` site) to switch between the public landing page and the lazy-loaded Officer Portal (`OfficerLoginGate` -> `OfficerManagement`) and `OfficerRosterModal` via `React.lazy` + `Suspense`.
+  - **Authentication State:** Reads `sessionStorage` (`STORAGE_KEYS.OFFICER_AUTH`) so the portal stays unlocked only for the current browser tab session or until logout.
+  - **Shared State Hoisted to Root:** Manages `roster`, `competitionResults`, and `competitionSchedule`. On mount, fetches live server data in parallel via `Promise.all([fetchStandings(), fetchSchedule(), fetchRoster()])`.
   - **Callbacks Passed Down:**
     - `handleUpdateCompetitionResults` -> updates state, `localStorage`, dispatches `crabs-standings-updated`, and calls `saveStandingsToServer`.
     - `handleUpdateCompetitionSchedule` -> updates state, `localStorage`, dispatches `crabs-schedule-updated`, and calls `saveScheduleToServer`.
@@ -93,18 +92,19 @@ The application is a **full-stack React + Express SPA** (no SQL or external data
   - `MemberRegistration` (id, contact info, experience, equipment, family membership, payment method `'paypal' | 'cash_at_meeting'`, dues, status `'pending' | 'paid' | 'verified'`)
   - `RecipeIngredient`, `HopAddition`, `Recipe` (vitals `og`/`fg`/`abv`/`ibu`/`srm`, category `'real-ale' | 'ipa' | 'stout' | 'wheat-farmhouse' | 'lager-specialty'`, fermentables, hops, yeast, temperatures, optional `award` and `caskConditioned`).
 
-### API & CSV Client (`/src/services/`)
+### API, Shared Constants & CSV Client (`/src/services/`)
 - **`src/services/api.ts`**:
-  - **Server Sync Methods:**
+  - **Shared Constants & Cache Helpers:** Exports `STORAGE_KEYS`, `SYNC_EVENTS`, `BREWING_EXPERIENCE_OPTIONS`, `readCachedList()`, and `writeCachedList()`.
+  - **Server Sync Methods (via generic `fetchResource`/`saveResource` with `cache: 'no-store'`):**
     - `fetchStandings()` / `saveStandingsToServer()` (`/api/standings`)
     - `fetchSchedule()` / `saveScheduleToServer()` (`/api/schedule`)
     - `fetchMinutes()` / `saveMinutesToServer()` (`/api/minutes`)
     - `fetchRoster()` / `saveRosterToServer()` (`/api/roster`)
     - `fetchRecipes()` / `saveRecipesToServer()` (`/api/recipes`)
-  - **CSV Utilities:**
-    - `generateStandingsCSV(standings)` & `downloadStandingsCSV(standings)` — builds RFC-style quoted CSV and triggers browser Blob download.
-    - `parseCSVLine(line)` — handles quoted fields and escaped quotes.
-    - `parseStandingsCSVText(text)` — parses both **row-by-row placement** CSVs (`Month, Style Category, Place, Brewer, Beer Name, Points`) and **column-based summary** CSVs (`Month, Category, 1st Place, 2nd Place, ...`) into `MonthArchive[]`.
+  - **CSV Utilities (RFC-4180 escaped):**
+    - `generateStandingsCSV(standings)` & `downloadStandingsCSV(standings)` — builds escaped CSV and triggers browser Blob download.
+    - `downloadRosterCSV(roster, detailed)` — unified roster CSV exporter used by both `RosterTab.tsx` and `OfficerRosterModal.tsx`.
+    - `parseCSVLine(line)`, `parseRosterCSVText(text)`, and `parseStandingsCSVText(text)` — handles quoted fields, escaped quotes, member CSV imports, and row-by-row/column-based standings CSV imports.
 
 ---
 
@@ -114,7 +114,7 @@ Used as client-side initial/fallback data when `server_data/*.json` is unreachab
 
 | File | Exports | Connected Components |
 | :--- | :--- | :--- |
-| **`src/data/competitionStandings.ts`** | `MonthlyPlacement`, `MonthArchive`, `TopBrewer`, `DEFAULT_MONTHLY_RESULTS` (9 months of official standings), `HISTORICAL_MOCK_RESULTS`, `calculateTopBrewers(results)` | `App.tsx`, `CompetitionSchedule.tsx`, `OfficerManagement.tsx`, `api.ts` |
+| **`src/data/competitionStandings.ts`** | `MonthlyPlacement`, `MonthArchive`, `TopBrewer`, `DEFAULT_MONTHLY_RESULTS` (9 months of official standings), `calculateTopBrewers(results)` | `App.tsx`, `CompetitionSchedule.tsx`, `OfficerManagement.tsx`, `StandingsTab.tsx`, `api.ts` |
 | **`src/data/competitionSchedule.ts`** | `MonthlyComp`, `DEFAULT_ANNUAL_SCHEDULE` (12 monthly BJCP themes & guidelines) | `App.tsx`, `CompetitionSchedule.tsx`, `OfficerManagement.tsx`, `api.ts` |
 | **`src/data/defaultMinutes.ts`** | `SimpleMeetingNote`, `DEFAULT_MINUTES` (archived 2026 meeting notes) | `MeetingMinutes.tsx`, `OfficerManagement.tsx`, `api.ts` |
 | **`src/data/defaultRoster.ts`** | `DEFAULT_ROSTER` (`MemberRegistration[]` seed sample) | `App.tsx` |
@@ -139,13 +139,18 @@ Used as client-side initial/fallback data when `server_data/*.json` is unreachab
 | **`RecipeVault.tsx`** | `#vault` | Filterable/searchable club recipe archive with full brew-sheet modal and "Submit Your Recipe" form modal. Fetches live data via `fetchRecipes()` on mount; submitting a new recipe calls `saveRecipesToServer()`, updates `localStorage`, and dispatches `crabs-recipes-updated`. |
 | **`Footer.tsx`** | Bottom footer | Displays club address, contact email (`crabsbrew@googlegroups.com`), Facebook link, copyright, and **"Officers Management Portal"** trigger (`onOpenOfficerPortal`). |
 
-### Officer Administration Components
+### Officer Administration Components (Lazy-Loaded Chunks)
 
 | Component | Access / Trigger | What It Does & How It Connects |
 | :--- | :--- | :--- |
-| **`OfficerLoginGate.tsx`** | Shown on `#officers` when `!isOfficerAuthenticated` | Password gate protecting the Officer Portal. Validates against `localStorage.getItem('crabs_officer_password_v1')` (defaults to `'crabs1981'` if unchanged). Sets `sessionStorage.setItem('crabs_officer_authenticated', 'true')` on success and calls `onSuccess()`. |
-| **`OfficerManagement.tsx`** | Shown on `#officers` once authenticated | Full multi-tab admin dashboard connected to all server APIs:<br>• **Tab 1 (`minutes`):** Create, edit, search, and delete meeting notes -> `saveMinutesToServer()`.<br>• **Tab 2 (`schedule`):** Edit monthly styles, BJCP codes, guidelines, or active spotlight month -> `saveScheduleToServer()`.<br>• **Tab 3 (`standings`):** Enter monthly flight winners (with tie support), delete/reset flights, **Export CSV** (`downloadStandingsCSV`), and **Import CSV** modal (`parseStandingsCSVText` with Append/Merge or Overwrite/Replace options) -> `saveStandingsToServer()`.<br>• **Tab 4 (`roster`):** Add/verify/edit/delete members, import/export member roster CSV -> calls `onUpdateRoster` (`saveRosterToServer`).<br>• **Tab 5 (`vault`):** Inspect, remove, or reset recipes -> `saveRecipesToServer()`.<br>• **Header Modal:** Change Officer Portal password (updates `crabs_officer_password_v1` in `localStorage`) and Log Out (`onLogout`). |
-| **`OfficerRosterModal.tsx`** | Optional quick-view modal in `App.tsx` | Lightweight modal showing member roster search, verification toggles, CSV export, and clear roster action, wired to `roster`, `onUpdateRoster`, and `onClearRoster` in `App.tsx`. |
+| **`OfficerLoginGate.tsx`** | Shown on `#officers` when `!isOfficerAuthenticated` | Password gate protecting the Officer Portal. Validates against `localStorage.getItem(STORAGE_KEYS.OFFICER_PASSWORD)` (defaults to `'crabs1981'` if unchanged). Sets `sessionStorage` auth flag on success and calls `onSuccess()`. |
+| **`OfficerManagement.tsx`** | Shown on `#officers` once authenticated | Shell managing portal header, tab navigation, password update modal, toast alerts, and initial server sync, delegating each tab view to focused subcomponents under `src/components/officer/`. |
+| **`officer/MinutesTab.tsx`** | Tab 1 (`minutes`) | Create, edit, search, and delete meeting notes + Add Month modal -> calls `saveMinutesToServer()`. |
+| **`officer/ScheduleTab.tsx`** | Tab 2 (`schedule`) | Edit monthly styles, BJCP codes, guidelines, or active spotlight month + Edit Month modal -> calls `saveScheduleToServer()`. |
+| **`officer/StandingsTab.tsx`** | Tab 3 (`standings`) | Enter monthly flight winners (with tie support), delete/reset flights, memoized BOTY leaderboard preview, **Export CSV** (`downloadStandingsCSV`), and **Import CSV** modal (`parseStandingsCSVText`) -> calls `saveStandingsToServer()`. |
+| **`officer/RosterTab.tsx`** | Tab 4 (`roster`) | Add/verify/edit/delete members, CSV import (`parseRosterCSVText`), and CSV export (`downloadRosterCSV`) -> calls `onUpdateRoster` (`saveRosterToServer`). |
+| **`officer/RecipeVaultTab.tsx`** | Tab 5 (`vault`) | Inspect formulas, filter by style/search, remove, or reset recipes -> calls `saveRecipesToServer()`. |
+| **`OfficerRosterModal.tsx`** | Optional quick-view modal in `App.tsx` | Lightweight modal showing member roster search, verification toggles, CSV export (`downloadRosterCSV`), and clear roster action, wired to `roster`, `onUpdateRoster`, and `onClearRoster` in `App.tsx`. |
 
 ---
 
@@ -154,6 +159,7 @@ Used as client-side initial/fallback data when `server_data/*.json` is unreachab
 ### REST API Endpoints (`server.ts`)
 | Endpoint | Methods | Backing File | Consumers |
 | :--- | :--- | :--- | :--- |
+| `/api/health` | `GET` | — | Health check (`{ status: 'ok', uptime }`) |
 | `/api/standings` | `GET`, `POST` | `server_data/standings.json` + `standings.csv` | `App.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
 | `/api/standings/csv` | `GET` | `server_data/standings.csv` | Direct CSV download |
 | `/api/schedule` | `GET`, `POST` | `server_data/schedule.json` | `App.tsx`, `OfficerManagement.tsx` (via `api.ts`) |

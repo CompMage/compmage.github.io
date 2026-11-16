@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
-import { X, Shield, Download, Trash2, Mail, Users, Check, AlertCircle } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { X, Shield, Download, Trash2, Users } from 'lucide-react';
 import { MemberRegistration } from '../types';
+import {
+  downloadRosterCSV,
+  BREWING_EXPERIENCE_OPTIONS,
+  STORAGE_KEYS,
+  writeCachedList
+} from '../services/api';
 
 interface OfficerRosterModalProps {
   isOpen: boolean;
@@ -18,70 +24,18 @@ export const OfficerRosterModal: React.FC<OfficerRosterModalProps> = ({
   onUpdateRoster
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const filteredRoster = useMemo(() => {
+    const q = searchTerm.toLowerCase();
+    return roster.filter(
+      (m) =>
+        `${m.firstName} ${m.lastName}`.toLowerCase().includes(q) ||
+        m.email.toLowerCase().includes(q) ||
+        m.id.toLowerCase().includes(q)
+    );
+  }, [roster, searchTerm]);
 
   if (!isOpen) return null;
-
-  const filteredRoster = roster.filter(
-    (m) =>
-      `${m.firstName} ${m.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.id.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Export to CSV Function
-  const exportToCSV = () => {
-    if (roster.length === 0) return;
-
-    const headers = [
-      'Member ID',
-      'Registration Date',
-      'First Name',
-      'Last Name',
-      'Email',
-      'Phone',
-      'Membership Type',
-      'Dues ($)',
-      'Payment Method',
-      'Brewing Experience',
-      'Equipment',
-      'Attended Meeting',
-      'Family Members Count',
-      'Family Details'
-    ];
-
-    const rows = roster.map((m) => {
-      const familyDetail = m.familyMembers
-        .map((f) => `${f.name} (${f.relationship}: ${f.email})`)
-        .join('; ');
-
-      return [
-        `"${m.id}"`,
-        `"${new Date(m.createdAt).toLocaleDateString()}"`,
-        `"${m.firstName}"`,
-        `"${m.lastName}"`,
-        `"${m.email}"`,
-        `"${m.phone || ''}"`,
-        `"${m.isFamily ? 'Family' : 'Individual'}"`,
-        m.duesAmount,
-        `"${m.paymentMethod === 'paypal' ? 'PayPal' : 'Cash at Meeting'}"`,
-        `"${m.brewingExperience}"`,
-        `"${m.equipment}"`,
-        `"${m.attendedMeeting}"`,
-        m.familyMembers.length,
-        `"${familyDetail}"`
-      ].join(',');
-    });
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `CRABS_Membership_Roster_${new Date().toISOString().slice(0, 10)}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -104,7 +58,7 @@ export const OfficerRosterModal: React.FC<OfficerRosterModalProps> = ({
 
           <div className="flex items-center gap-2">
             <button
-              onClick={exportToCSV}
+              onClick={() => downloadRosterCSV(roster, true)}
               disabled={roster.length === 0}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg shadow-2xs transition-colors"
             >
@@ -206,29 +160,20 @@ export const OfficerRosterModal: React.FC<OfficerRosterModalProps> = ({
                             const newExp = e.target.value;
                             const updated = roster.map((m) => (m.id === member.id ? { ...m, brewingExperience: newExp } : m));
                             onUpdateRoster(updated);
-                            try {
-                              localStorage.setItem('crabs_member_roster_v1', JSON.stringify(updated));
-                            } catch {}
+                            writeCachedList(STORAGE_KEYS.ROSTER, updated);
                           }}
                           className="bg-white border border-slate-300 hover:border-slate-400 text-slate-800 text-xs rounded-md px-2 py-1 focus:outline-none focus:ring-1 focus:ring-red-500 cursor-pointer w-full max-w-[190px] truncate"
                           title="Change brewer experience level"
                         >
-                          {member.brewingExperience && ![
-                            'Just starting out / Never brewed',
-                            'Under 1 year (New to the hobby)',
-                            '1-3 years (Casual brewer)',
-                            '3-5 years (Regular homebrewer)',
-                            '5-10 years (Advanced brewer)',
-                            '10+ years (Homebrew veteran / Pro)'
-                          ].includes(member.brewingExperience) && (
-                            <option value={member.brewingExperience}>{member.brewingExperience}</option>
-                          )}
-                          <option value="Just starting out / Never brewed">Just starting out / Never brewed</option>
-                          <option value="Under 1 year (New to the hobby)">Under 1 year (New to the hobby)</option>
-                          <option value="1-3 years (Casual brewer)">1-3 years (Casual brewer)</option>
-                          <option value="3-5 years (Regular homebrewer)">3-5 years (Regular homebrewer)</option>
-                          <option value="5-10 years (Advanced brewer)">5-10 years (Advanced brewer)</option>
-                          <option value="10+ years (Homebrew veteran / Pro)">10+ years (Homebrew veteran / Pro)</option>
+                          {member.brewingExperience &&
+                            !(BREWING_EXPERIENCE_OPTIONS as readonly string[]).includes(member.brewingExperience) && (
+                              <option value={member.brewingExperience}>{member.brewingExperience}</option>
+                            )}
+                          {BREWING_EXPERIENCE_OPTIONS.map((opt) => (
+                            <option key={opt} value={opt}>
+                              {opt}
+                            </option>
+                          ))}
                         </select>
                       ) : (
                         <div className="text-slate-800 font-medium">{member.brewingExperience}</div>

@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Beer, Search, Filter, BookOpen, Plus, X, Award, ExternalLink, ChevronRight, Trash2, FileText, Sparkles, Check } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, BookOpen, Plus, X, Award, ChevronRight, Trash2, FileText, Check } from 'lucide-react';
 import { CLUB_RECIPES } from '../data/mockRecipes';
 import { Recipe } from '../types';
-import { fetchRecipes, saveRecipesToServer } from '../services/api';
+import {
+  fetchRecipes,
+  saveRecipesToServer,
+  readCachedList,
+  writeCachedList,
+  STORAGE_KEYS,
+  SYNC_EVENTS
+} from '../services/api';
 
 export const RecipeVault: React.FC = () => {
-  const [recipes, setRecipes] = useState<Recipe[]>(() => {
-    try {
-      const stored = localStorage.getItem('crabs_recipes_vault_v1');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return CLUB_RECIPES;
-  });
+  const [recipes, setRecipes] = useState<Recipe[]>(() =>
+    readCachedList(STORAGE_KEYS.RECIPES, CLUB_RECIPES)
+  );
 
   // Sync with server on mount so all devices see the shared recipe archive
   useEffect(() => {
@@ -24,16 +27,13 @@ export const RecipeVault: React.FC = () => {
 
   useEffect(() => {
     const handleSync = () => {
-      try {
-        const stored = localStorage.getItem('crabs_recipes_vault_v1');
-        if (stored) setRecipes(JSON.parse(stored));
-      } catch {}
+      setRecipes(readCachedList(STORAGE_KEYS.RECIPES, CLUB_RECIPES));
     };
     window.addEventListener('storage', handleSync);
-    window.addEventListener('crabs-recipes-updated', handleSync);
+    window.addEventListener(SYNC_EVENTS.RECIPES, handleSync);
     return () => {
       window.removeEventListener('storage', handleSync);
-      window.removeEventListener('crabs-recipes-updated', handleSync);
+      window.removeEventListener(SYNC_EVENTS.RECIPES, handleSync);
     };
   }, []);
 
@@ -123,14 +123,17 @@ export const RecipeVault: React.FC = () => {
     { id: 'wheat-farmhouse', label: 'Wheat & Farmhouse' }
   ];
 
-  const filteredRecipes = recipes.filter((recipe) => {
-    const matchesCategory = selectedCategory === 'all' || recipe.category === selectedCategory;
-    const matchesSearch =
-      recipe.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      recipe.brewer.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      recipe.style.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredRecipes = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    return recipes.filter((recipe) => {
+      const matchesCategory = selectedCategory === 'all' || recipe.category === selectedCategory;
+      const matchesSearch =
+        recipe.name.toLowerCase().includes(q) ||
+        recipe.brewer.toLowerCase().includes(q) ||
+        recipe.style.toLowerCase().includes(q);
+      return matchesCategory && matchesSearch;
+    });
+  }, [recipes, selectedCategory, searchQuery]);
 
   const handleRecipeSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -170,12 +173,7 @@ export const RecipeVault: React.FC = () => {
     saveRecipesToServer(updatedRecipes).catch((err) => {
       console.error('Failed to save recipe to server:', err);
     });
-    try {
-      localStorage.setItem('crabs_recipes_vault_v1', JSON.stringify(updatedRecipes));
-      window.dispatchEvent(new Event('crabs-recipes-updated'));
-    } catch (err) {
-      console.error('Failed to save recipe to localStorage', err);
-    }
+    writeCachedList(STORAGE_KEYS.RECIPES, updatedRecipes, SYNC_EVENTS.RECIPES);
 
     setSubmittedMessage(`Recipe "${createdRecipe.name}" by ${createdRecipe.brewer} successfully added to the Vault!`);
     

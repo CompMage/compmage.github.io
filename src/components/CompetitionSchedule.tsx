@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Trophy, Calendar, Award, CheckCircle2, ChevronRight, ChevronDown, ChevronUp, Medal, FileText, Sparkles, Filter, ExternalLink, Flame, Beer, ArrowRight } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Trophy, Calendar, Award, CheckCircle2, ChevronRight, ChevronDown, ChevronUp, FileText, ExternalLink, ArrowRight } from 'lucide-react';
 import {
   DEFAULT_MONTHLY_RESULTS,
   calculateTopBrewers,
-  MonthArchive,
-  MonthlyPlacement,
-  TopBrewer
+  MonthArchive
 } from '../data/competitionStandings';
-
 import {
   MonthlyComp,
   DEFAULT_ANNUAL_SCHEDULE
 } from '../data/competitionSchedule';
+import { STORAGE_KEYS, SYNC_EVENTS, readCachedList } from '../services/api';
 
 interface CompetitionScheduleProps {
   competitionResults?: MonthArchive[];
@@ -24,48 +22,49 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
 }) => {
   // Toggle between 'this-month' and 'full-year'
   const [scheduleView, setScheduleView] = useState<'this-month' | 'full-year'>('this-month');
-  const [selectedQuarter, setSelectedQuarter] = useState<string>('all');
   const [activeMonthModal, setActiveMonthModal] = useState<MonthlyComp | null>(null);
 
   // Dynamic competition schedule synced with Officer Portal
-  const [internalSchedule, setInternalSchedule] = useState<MonthlyComp[]>(() => {
-    if (propSchedule && propSchedule.length > 0) return propSchedule;
-    try {
-      const stored = localStorage.getItem('crabs_competition_schedule_v1');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return DEFAULT_ANNUAL_SCHEDULE;
-  });
+  const [internalSchedule, setInternalSchedule] = useState<MonthlyComp[]>(() =>
+    propSchedule && propSchedule.length > 0
+      ? propSchedule
+      : readCachedList(STORAGE_KEYS.SCHEDULE, DEFAULT_ANNUAL_SCHEDULE)
+  );
 
   useEffect(() => {
-    if (propSchedule) setInternalSchedule(propSchedule);
+    if (propSchedule && propSchedule.length > 0) setInternalSchedule(propSchedule);
   }, [propSchedule]);
 
   useEffect(() => {
     const handleScheduleSync = () => {
-      try {
-        const stored = localStorage.getItem('crabs_competition_schedule_v1');
-        if (stored) setInternalSchedule(JSON.parse(stored));
-      } catch {}
+      setInternalSchedule(readCachedList(STORAGE_KEYS.SCHEDULE, DEFAULT_ANNUAL_SCHEDULE));
     };
     window.addEventListener('storage', handleScheduleSync);
-    window.addEventListener('crabs-schedule-updated', handleScheduleSync);
+    window.addEventListener(SYNC_EVENTS.SCHEDULE, handleScheduleSync);
     return () => {
       window.removeEventListener('storage', handleScheduleSync);
-      window.removeEventListener('crabs-schedule-updated', handleScheduleSync);
+      window.removeEventListener(SYNC_EVENTS.SCHEDULE, handleScheduleSync);
     };
   }, []);
 
-  const annualSchedule = propSchedule || internalSchedule;
+  const annualSchedule =
+    propSchedule && propSchedule.length > 0
+      ? propSchedule
+      : internalSchedule.length > 0
+        ? internalSchedule
+        : DEFAULT_ANNUAL_SCHEDULE;
   const currentMonthComp =
-    annualSchedule.find((m) => m.isCurrentMonth) || annualSchedule[10] || annualSchedule[0];
+    annualSchedule.find((m) => m.isCurrentMonth) ||
+    annualSchedule[10] ||
+    annualSchedule[0] ||
+    DEFAULT_ANNUAL_SCHEDULE[10];
 
   // Dynamically compute the month following currentMonthComp
   const currentMonthIdx = annualSchedule.findIndex((m) => m.month === currentMonthComp.month);
   const nextMonthComp =
-    currentMonthIdx >= 0 && currentMonthIdx < annualSchedule.length - 1
+    (currentMonthIdx >= 0 && currentMonthIdx < annualSchedule.length - 1
       ? annualSchedule[currentMonthIdx + 1]
-      : annualSchedule[0];
+      : annualSchedule[0]) || DEFAULT_ANNUAL_SCHEDULE[11];
 
   // State for Section 4 standings view (Top 5 vs Monthly Standings Breakout vs Brewer of the Year Points System)
   const [standingsTab, setStandingsTab] = useState<'top5' | 'monthly' | 'points'>('top5');
@@ -75,15 +74,11 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
   const [selectedMonthFilter, setSelectedMonthFilter] = useState<string>('all');
 
   // Dynamic monthly results and Top 5 Standings synced with Officer Portal
-  const [internalMonthlyResults, setInternalMonthlyResults] = useState<MonthArchive[]>(() => {
-    if (propResults && propResults.length > 0) return propResults;
-    try {
-      localStorage.removeItem('crabs_competition_standings_v1');
-      const stored = localStorage.getItem('crabs_competition_standings_v2');
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return DEFAULT_MONTHLY_RESULTS;
-  });
+  const [internalMonthlyResults, setInternalMonthlyResults] = useState<MonthArchive[]>(() =>
+    propResults && propResults.length > 0
+      ? propResults
+      : readCachedList(STORAGE_KEYS.STANDINGS, DEFAULT_MONTHLY_RESULTS, STORAGE_KEYS.LEGACY_STANDINGS, true)
+  );
 
   useEffect(() => {
     if (propResults) {
@@ -93,32 +88,30 @@ export const CompetitionSchedule: React.FC<CompetitionScheduleProps> = ({
 
   useEffect(() => {
     const handleSync = () => {
-      try {
-        const stored = localStorage.getItem('crabs_competition_standings_v2');
-        if (stored) setInternalMonthlyResults(JSON.parse(stored));
-      } catch {}
+      setInternalMonthlyResults(
+        readCachedList(STORAGE_KEYS.STANDINGS, DEFAULT_MONTHLY_RESULTS, undefined, true)
+      );
     };
     window.addEventListener('storage', handleSync);
-    window.addEventListener('crabs-standings-updated', handleSync);
+    window.addEventListener(SYNC_EVENTS.STANDINGS, handleSync);
     return () => {
       window.removeEventListener('storage', handleSync);
-      window.removeEventListener('crabs-standings-updated', handleSync);
+      window.removeEventListener(SYNC_EVENTS.STANDINGS, handleSync);
     };
   }, []);
 
   const monthlyResults = propResults || internalMonthlyResults;
-  const currentTop5 = calculateTopBrewers(monthlyResults);
+  const currentTop5 = useMemo(() => calculateTopBrewers(monthlyResults), [monthlyResults]);
 
   // Dynamically compute the active season leader(s) directly from current calculated points
-  const topBrewer = currentTop5 && currentTop5.length > 0 ? currentTop5[0] : null;
-  const tiedForFirst = topBrewer
-    ? currentTop5.filter((b) => Number(b.points) === Number(topBrewer.points))
-    : [];
-  const activeLeaderBadge = !topBrewer
-    ? 'Standings Reset (0 pts)'
-    : tiedForFirst.length > 1
-    ? `Active Leaders (Tie): ${tiedForFirst.map((b) => b.name).join(' & ')} (${topBrewer.points} pts)`
-    : `Active Leader: ${topBrewer.name} (${topBrewer.points} pts)`;
+  const activeLeaderBadge = useMemo(() => {
+    const topBrewer = currentTop5 && currentTop5.length > 0 ? currentTop5[0] : null;
+    if (!topBrewer) return 'Standings Reset (0 pts)';
+    const tiedForFirst = currentTop5.filter((b) => Number(b.points) === Number(topBrewer.points));
+    return tiedForFirst.length > 1
+      ? `Active Leaders (Tie): ${tiedForFirst.map((b) => b.name).join(' & ')} (${topBrewer.points} pts)`
+      : `Active Leader: ${topBrewer.name} (${topBrewer.points} pts)`;
+  }, [currentTop5]);
 
   return (
     <section id="competitions" className="py-16 sm:py-20 bg-slate-50 border-b border-slate-200">

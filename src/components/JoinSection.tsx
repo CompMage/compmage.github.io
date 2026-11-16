@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Beer, CheckCircle2, DollarSign, Mail, Plus, Trash2, Printer, ArrowRight, ShieldCheck, CreditCard, Users, HelpCircle } from 'lucide-react';
 import { MemberRegistration, FamilyMember } from '../types';
+import { BREWING_EXPERIENCE_OPTIONS } from '../services/api';
 
 interface JoinSectionProps {
   onMemberRegistered: (member: MemberRegistration) => void;
@@ -28,15 +29,7 @@ export const JoinSection: React.FC<JoinSectionProps> = ({ onMemberRegistered }) 
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedMember, setSubmittedMember] = useState<MemberRegistration | null>(null);
 
-  // Experience Options
-  const experienceOptions = [
-    'Just starting out / Never brewed',
-    'Under 1 year (New to the hobby)',
-    '1-3 years (Casual brewer)',
-    '3-5 years (Regular homebrewer)',
-    '5-10 years (Advanced brewer)',
-    '10+ years (Homebrew veteran / Pro)'
-  ];
+  const experienceOptions = BREWING_EXPERIENCE_OPTIONS;
 
   // Equipment Options
   const equipmentOptions = [

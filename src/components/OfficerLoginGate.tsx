@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Shield, Lock, Eye, EyeOff, ArrowLeft, CheckCircle2, AlertCircle } from 'lucide-react';
+import { STORAGE_KEYS } from '../services/api';
 
 interface OfficerLoginGateProps {
   onSuccess: () => void;
@@ -16,12 +17,12 @@ export const OfficerLoginGate: React.FC<OfficerLoginGateProps> = ({ onSuccess, o
     e.preventDefault();
     setError(null);
 
-    const storedPassword = localStorage.getItem('crabs_officer_password_v1') || 'crabs1981';
+    const storedPassword = localStorage.getItem(STORAGE_KEYS.OFFICER_PASSWORD) || 'crabs1981';
 
     if (password.trim() === storedPassword.trim()) {
       setIsSuccess(true);
       try {
-        sessionStorage.setItem('crabs_officer_authenticated', 'true');
+        sessionStorage.setItem(STORAGE_KEYS.OFFICER_AUTH, 'true');
       } catch (err) {
         console.error('sessionStorage error', err);
       }
