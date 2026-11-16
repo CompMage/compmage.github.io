@@ -19,6 +19,18 @@ if (!fs.existsSync(DATA_DIR)) {
   fs.mkdirSync(DATA_DIR, { recursive: true });
 }
 
+// Serve logo and static images stored in /images off the root
+const IMAGES_DIR = path.resolve(__dirname, 'images');
+if (fs.existsSync(IMAGES_DIR)) {
+  app.use(
+    '/images',
+    express.static(IMAGES_DIR, {
+      maxAge: '1y',
+      immutable: true
+    })
+  );
+}
+
 const STANDINGS_JSON_FILE = path.join(DATA_DIR, 'standings.json');
 const STANDINGS_CSV_FILE = path.join(DATA_DIR, 'standings.csv');
 const SCHEDULE_JSON_FILE = path.join(DATA_DIR, 'schedule.json');

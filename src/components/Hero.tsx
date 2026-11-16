@@ -101,7 +101,7 @@ export const Hero: React.FC<HeroProps> = ({ onJoinClick, onCompetitionsClick }) 
                     aria-label="View C.R.A.B.S. emblem full screen"
                   >
                     <img
-                      src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
+                      src={`${import.meta.env.BASE_URL}images/crabs_altcolor_caponly_1000_909266e9.png`}
                       alt="CRABS Chesapeake Real Ale Brewers Society Bottle Cap Logo"
                       className="w-56 h-56 sm:w-64 sm:h-64 object-contain filter drop-shadow-md group-hover:scale-105 transition-transform duration-300"
                     />
@@ -176,7 +176,7 @@ export const Hero: React.FC<HeroProps> = ({ onJoinClick, onCompetitionsClick }) 
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
+              src={`${import.meta.env.BASE_URL}images/crabs_altcolor_caponly_1000_909266e9.png`}
               alt="CRABS Chesapeake Real Ale Brewers Society Bottle Cap Logo"
               className="max-w-[85vw] max-h-[75vh] w-auto h-auto object-contain filter drop-shadow-[0_20px_50px_rgba(0,0,0,0.8)] select-none"
             />

@@ -212,7 +212,7 @@ export const OfficerManagement: React.FC<OfficerManagementProps> = ({
 
               <div className="flex items-center gap-3">
                 <img
-                  src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
+                  src={`${import.meta.env.BASE_URL}images/crabs_altcolor_caponly_1000_909266e9.png`}
                   alt="C.R.A.B.S. Logo"
                   className="w-9 h-9 object-contain"
                 />

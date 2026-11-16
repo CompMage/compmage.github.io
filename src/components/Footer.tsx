@@ -17,7 +17,7 @@ export const Footer: React.FC<FooterProps> = ({ onOpenOfficerPortal }) => {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex items-center gap-3.5">
               <img
-                src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
+                src={`${import.meta.env.BASE_URL}images/crabs_altcolor_caponly_1000_909266e9.png`}
                 alt="C.R.A.B.S. Logo"
                 className="w-12 h-12 object-contain filter drop-shadow-sm shrink-0"
               />

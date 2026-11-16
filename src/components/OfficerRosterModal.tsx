@@ -51,7 +51,7 @@ export const OfficerRosterModal: React.FC<OfficerRosterModalProps> = ({
                 Club Officer Membership Roster
               </h3>
               <p className="text-xs text-slate-500">
-                President: Joe O'Keefe · VP: Chris Hermance · Treasurer: Rob Kiernan · Secretary: Ben Schwalb · Guild Rep: Tom Flavinh
+                President: Joe O'Keefe · VP: Chris Hermance · Treasurer: Rob Kiernan · Secretary: Ben Schwalb · Guild Rep: Justin Wilson
               </p>
             </div>
           </div>

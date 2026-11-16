@@ -63,7 +63,7 @@ export const OfficerLoginGate: React.FC<OfficerLoginGateProps> = ({ onSuccess, o
         <div className="text-center space-y-2">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-800/80 border border-slate-700/80 shadow-inner mx-auto p-2.5">
             <img
-              src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
+              src={`${import.meta.env.BASE_URL}images/crabs_altcolor_caponly_1000_909266e9.png`}
               alt="C.R.A.B.S. Logo"
               className="w-full h-full object-contain filter drop-shadow-sm"
             />

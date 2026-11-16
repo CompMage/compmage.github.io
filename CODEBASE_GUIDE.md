@@ -40,8 +40,8 @@ The application is a **full-stack React + Express SPA** (no SQL or external data
 | **`package-lock.json`** | Dependency lockfile | Used by `npm ci` for reproducible local and Docker builds. |
 | **`tsconfig.json`** | TypeScript compiler configuration | Targets `ES2022`, `moduleResolution: "bundler"`, `jsx: "react-jsx"`, `noEmit: true`. Excludes `dist`. |
 | **`vite.config.ts`** | Vite bundler configuration | Enables `@vitejs/plugin-react` and `@tailwindcss/vite`, sets `base: './'`, aliases `@` to project root, and configures HMR flag (`DISABLE_HMR`). **Do not mount Express here**—Express runs in `server.ts`. |
-| **`index.html`** | HTML shell & metadata | Loads Google Fonts (`Plus Jakarta Sans`, `JetBrains Mono`), sets club favicon (`/assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`), and mounts React via `<script type="module" src="/src/main.tsx">`. |
-| **`server.ts`** | Full-stack Express backend & SPA host | Serves REST endpoints (`/api/health`, `/api/standings`, `/api/standings/csv`, `/api/schedule`, `/api/minutes`, `/api/roster`, `/api/recipes`) via a reusable route factory with `Cache-Control: no-store`, atomic temp-file-then-rename writes, RFC-4180 CSV escaping, immutable asset caching, and serves either `vite.middlewares` (dev) or `/dist` (prod). **Constraint:** Must remain self-contained (must NOT import client `.ts` files from `src/` so `node server.ts` works natively in ESM without a bundler). |
+| **`index.html`** | HTML shell & metadata | Loads Google Fonts (`Plus Jakarta Sans`, `JetBrains Mono`), sets club favicon (`/images/crabs_altcolor_caponly_1000_909266e9.png`), and mounts React via `<script type="module" src="/src/main.tsx">`. |
+| **`server.ts`** | Full-stack Express backend & SPA host | Serves static logo assets from `/images/` (`express.static` mounted at `/images` in both dev and prod), REST endpoints (`/api/health`, `/api/standings`, `/api/standings/csv`, `/api/schedule`, `/api/minutes`, `/api/roster`, `/api/recipes`) via a reusable route factory with `Cache-Control: no-store`, atomic temp-file-then-rename writes, RFC-4180 CSV escaping, immutable asset caching, and serves either `vite.middlewares` (dev) or `/dist` (prod). **Constraint:** Must remain self-contained (must NOT import client `.ts` files from `src/` so `node server.ts` works natively in ESM without a bundler). |
 | **`.dockerignore`** | Docker build exclusion rules | Excludes `node_modules`, `dist`, `.git`, `.aistudio`, `.env*`, logs, and `*.tmp` files from Docker build contexts. |
 
 ---
@@ -61,11 +61,13 @@ The application is a **full-stack React + Express SPA** (no SQL or external data
 
 ---
 
-## 4. Public Static Assets (`/public/`)
+## 4. Root Static Images (`/images/`)
+
+> **Serving Note:** Stored off the project root in `/images/` and mounted directly at `/images` in `server.ts` (`express.static` with `maxAge: '1y', immutable: true`) for both development and production. Include `/images` in Docker runtime images alongside `dist/` and `server_data/`.
 
 | Path | Purpose | Where Referenced |
 | :--- | :--- | :--- |
-| **`public/assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`** | Official C.R.A.B.S. bottle-cap emblem & favicon | Referenced by `index.html`, `Navbar.tsx`, `Hero.tsx`, `Footer.tsx`, `OfficerLoginGate.tsx`, and `OfficerManagement.tsx`. |
+| **`images/crabs_altcolor_caponly_1000_909266e9.png`** | Official C.R.A.B.S. bottle-cap emblem & favicon (served at `/images/crabs_altcolor_caponly_1000_909266e9.png`) | Referenced by `index.html`, `Navbar.tsx`, `Hero.tsx`, `Footer.tsx`, `OfficerLoginGate.tsx`, and `OfficerManagement.tsx`. |
 
 ---
 
@@ -187,4 +189,4 @@ Used as client-side initial/fallback data when `server_data/*.json` is unreachab
 1. **Keep `server.ts` Independent of `src/`:** Do not import `.ts` files from `./src/...` inside `server.ts`. Node's native TypeScript execution (`node server.ts`) uses strict ESM resolution and will fail with `ERR_MODULE_NOT_FOUND` on extensionless client TypeScript imports.
 2. **Preserve Flat-File Persistence:** Do not introduce SQL/external databases unless explicitly requested. All shared state changes must call the corresponding `save*ToServer()` helper in `src/services/api.ts`.
 3. **Verify Before Finishing:** Always run `npm run lint` (`tsc --noEmit`) and `npm run build` (`vite build`), and verify `NODE_ENV=production node server.ts` starts cleanly without module errors.
-4. **Preserve Docker Compatibility:** Always read/write server data strictly inside `server_data/` (resolved relative to `server.ts`) so Docker volume mounts (`-v ./server_data:/app/server_data`) capture all state.
+4. **Preserve Docker Compatibility:** Always read/write server data strictly inside `server_data/` and keep static brand images in `images/` (both resolved relative to `server.ts`) so Docker runtime images and volume mounts (`-v ./server_data:/app/server_data`) preserve all state and assets.

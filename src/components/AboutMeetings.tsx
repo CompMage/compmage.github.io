@@ -302,7 +302,7 @@ export const AboutMeetings: React.FC = () => {
             </div>
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
               <span className="text-[11px] font-bold text-red-700 uppercase tracking-wider block">Guild Representative</span>
-              <p className="text-sm font-bold text-slate-900">Tom Flavinh</p>
+              <p className="text-sm font-bold text-slate-900">Justin Wilson</p>
               <p className="text-[11px] text-slate-500">MD Homebrewers Guild Liaison</p>
             </div>
           </div>

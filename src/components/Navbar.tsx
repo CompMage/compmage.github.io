@@ -45,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             <div className="relative w-12 h-12 flex-shrink-0 transition-transform duration-200 group-hover:scale-105">
               <img
-                src={`${import.meta.env.BASE_URL}assets/aistudio/crabs_altcolor_caponly_1000_909266e9.png`}
+                src={`${import.meta.env.BASE_URL}images/crabs_altcolor_caponly_1000_909266e9.png`}
                 alt="C.R.A.B.S. Logo"
                 className="w-full h-full object-contain filter drop-shadow-sm"
               />
