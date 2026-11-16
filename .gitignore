@@ -9,3 +9,5 @@ coverage/
 .vscode/
 .idea/
 .aistudio/
+server_data/*.db-wal
+server_data/*.db-shm

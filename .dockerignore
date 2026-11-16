@@ -14,3 +14,5 @@ build
 tmp
 coverage
 server_data/*.tmp
+server_data/*.db-wal
+server_data/*.db-shm

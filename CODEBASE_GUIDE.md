@@ -6,12 +6,12 @@
 
 ## 1. High-Level Architecture Overview
 
-The application is a **full-stack React + Express SPA** (no SQL or external database).
+The application is a **full-stack React + Express + SQLite SPA**.
 - **Frontend:** React 19, TypeScript, Vite, Tailwind CSS v4 (`@tailwindcss/vite`), Lucide React icons.
 - **Backend:** Node.js + Express (`server.ts`) running on port `3000`.
   - In **development** (`npm run dev` / `tsx server.ts`), Express mounts Vite middlewares to serve the React app alongside `/api/*` routes.
   - In **production** (`npm start` / `node server.ts`), Express serves the static bundle compiled into `dist/` (`npm run build`) alongside `/api/*` routes.
-- **Data Persistence:** Flat JSON and CSV files stored on disk in `server_data/`. All four primary club datasets (**Meeting Minutes**, **Competition Standings**, **Recipe Vault**, and **Member Roster**, plus **Competition Schedule**) read from and write to `/api/*` endpoints so updates entered from any browser are visible to every visitor. Client-side `localStorage` is kept only as a secondary cache/offline fallback and for intra-tab sync events.
+- **Data Persistence:** Embedded SQLite database (`server_data/crabs.db`) powered by Node's built-in `node:sqlite` (`DatabaseSync`, WAL mode, transactional writes). All club datasets (**Recipes**, **Roster**, **Competition Standings**, **Competition Schedule**, and **Meeting Minutes**) read from and write to SQLite via `/api/*` endpoints so updates entered from any browser are visible to every visitor. Client-side `localStorage` is kept only as a secondary cache/offline fallback and for intra-tab sync events.
 
 ### System Data Flow
 
@@ -20,12 +20,12 @@ The application is a **full-stack React + Express SPA** (no SQL or external data
 │  React Client (Browser)   │ ─────────────────────────► │   Express Server (server.ts)  │
 │  src/App.tsx & Components │ ◄───────────────────────── │   REST API: /api/*            │
 └─────────────┬─────────────┘     JSON / CSV payloads    └───────────────┬───────────────┘
-              │                                                          │ fs.readFileSync /
-              │ Fallback cache + CustomEvent sync                        │ fs.writeFileSync
+              │                                                          │ node:sqlite
+              │ Fallback cache + CustomEvent sync                        │ DatabaseSync (WAL)
               ▼                                                          ▼
 ┌───────────────────────────┐                            ┌───────────────────────────────┐
-│ Browser Web Storage       │                            │ Persistent Flat Files         │
-│ • localStorage (cache/pw) │                            │ /server_data/*.json & *.csv   │
+│ Browser Web Storage       │                            │ SQLite Database               │
+│ • localStorage (cache/pw) │                            │ /server_data/crabs.db         │
 │ • sessionStorage (auth)   │                            │ (Docker Volume Mount Target)  │
 └───────────────────────────┘                            └───────────────────────────────┘
 ```
@@ -41,23 +41,23 @@ The application is a **full-stack React + Express SPA** (no SQL or external data
 | **`tsconfig.json`** | TypeScript compiler configuration | Targets `ES2022`, `moduleResolution: "bundler"`, `jsx: "react-jsx"`, `noEmit: true`. Excludes `dist`. |
 | **`vite.config.ts`** | Vite bundler configuration | Enables `@vitejs/plugin-react` and `@tailwindcss/vite`, sets `base: './'`, aliases `@` to project root, and configures HMR flag (`DISABLE_HMR`). **Do not mount Express here**—Express runs in `server.ts`. |
 | **`index.html`** | HTML shell & metadata | Loads Google Fonts (`Plus Jakarta Sans`, `JetBrains Mono`), sets club favicon (`/images/crabs_altcolor_caponly_1000_909266e9.png`), and mounts React via `<script type="module" src="/src/main.tsx">`. |
-| **`server.ts`** | Full-stack Express backend & SPA host | Serves static logo assets from `/images/` (`express.static` mounted at `/images` in both dev and prod), REST endpoints (`/api/health`, `/api/standings`, `/api/standings/csv`, `/api/schedule`, `/api/minutes`, `/api/roster`, `/api/recipes`) via a reusable route factory with `Cache-Control: no-store`, atomic temp-file-then-rename writes, RFC-4180 CSV escaping, immutable asset caching, and serves either `vite.middlewares` (dev) or `/dist` (prod). **Constraint:** Must remain self-contained (must NOT import client `.ts` files from `src/` so `node server.ts` works natively in ESM without a bundler). |
-| **`.dockerignore`** | Docker build exclusion rules | Excludes `node_modules`, `dist`, `.git`, `.aistudio`, `.env*`, logs, and `*.tmp` files from Docker build contexts. |
+| **`server.ts`** | Full-stack Express + SQLite backend & SPA host | Opens `server_data/crabs.db` via built-in `node:sqlite`, initializes relational tables (`recipes`, `roster`, `standings_months`, `standings_placements`, `competition_schedule`, `meeting_minutes`, `db_meta`), runs one-time migration from legacy JSON files if present, mounts `/images` static assets, serves REST endpoints (`/api/health`, `/api/standings`, `/api/standings/csv`, `/api/schedule`, `/api/minutes`, `/api/roster`, `/api/recipes`) with `Cache-Control: no-store` and SQLite transactions, and serves either `vite.middlewares` (dev) or `/dist` (prod). **Constraint:** Must remain self-contained (must NOT import client `.ts` files from `src/` so `node server.ts` works natively in ESM without a bundler). |
+| **`.dockerignore`** | Docker build exclusion rules | Excludes `node_modules`, `dist`, `.git`, `.aistudio`, `.env*`, logs, `*.tmp`, and transient SQLite WAL/SHM files from Docker build contexts. |
 
 ---
 
-## 3. Persistent Server Storage (`/server_data/`)
+## 3. Persistent SQLite Storage (`/server_data/crabs.db`)
 
-> **Docker Warning:** Mount `/app/server_data` as a persistent Docker volume so club updates survive container rebuilds.
+> **Docker Warning:** Mount `/app/server_data` as a persistent Docker volume so the SQLite database (`crabs.db`) survives container rebuilds.
 
-| File | Backing Dataset | Format & Behavior |
+| Table | Backing Dataset | Key Columns & Behavior |
 | :--- | :--- | :--- |
-| **`server_data/standings.json`** | Competition flight results | Array of `MonthArchive` objects. Read/written by `/api/standings`. |
-| **`server_data/standings.csv`** | Competition flight CSV export | Auto-regenerated every time `writeStandings()` runs in `server.ts`. Served as downloadable attachment by `GET /api/standings/csv`. |
-| **`server_data/minutes.json`** | Monthly meeting minutes | Array of `SimpleMeetingNote` objects. Read/written by `/api/minutes`. |
-| **`server_data/recipes.json`** | Recipe Vault archive | Array of `Recipe` objects. Read/written by `/api/recipes`. |
-| **`server_data/roster.json`** | Club membership roster | Array of `MemberRegistration` objects. Read/written by `/api/roster`. |
-| **`server_data/schedule.json`** | Annual 12-month BJCP schedule | Array of `MonthlyComp` objects. Read/written by `/api/schedule`. |
+| **`recipes`** | Recipe Vault archive | Stores `Recipe` records (`id` PK, `sort_order`, vitals, `fermentables_json`, `hops_json`, `cask_conditioned`, `award`). Read/written by `/api/recipes`. |
+| **`roster`** | Club membership roster | Stores `MemberRegistration` records (`id` PK, `sort_order`, contact, experience/equipment, `is_family`, `family_members_json`, `dues_amount`, `status`). Read/written by `/api/roster`. |
+| **`standings_months`** & **`standings_placements`** | Competition flight results | Relational parent/child tables (`month` PK with `ON DELETE CASCADE`) storing monthly headers and individual placements. Read/written by `/api/standings`; dynamically exported to CSV by `GET /api/standings/csv`. |
+| **`competition_schedule`** | Annual 12-month BJCP schedule | Stores `MonthlyComp` rows (`month` PK, `month_number`, `style_category`, `bjcp_code`, `entry_guidelines_json`, `is_current_month`). Seeded with the 12 default months on first boot. Read/written by `/api/schedule`. |
+| **`meeting_minutes`** | Monthly meeting minutes | Stores `SimpleMeetingNote` rows (`id` PK, `sort_order`, `month`, `date`, `notes`). Read/written by `/api/minutes`. |
+| **`db_meta`** | Migration bookkeeping | Tracks one-time legacy JSON-to-SQLite migration flags so intentional resets/clears are preserved across restarts. |
 
 ---
 
@@ -159,15 +159,15 @@ Used as client-side initial/fallback data when `server_data/*.json` is unreachab
 ## 8. API Endpoint & Storage Key Cheat Sheet
 
 ### REST API Endpoints (`server.ts`)
-| Endpoint | Methods | Backing File | Consumers |
+| Endpoint | Methods | Backing SQLite Table(s) | Consumers |
 | :--- | :--- | :--- | :--- |
-| `/api/health` | `GET` | — | Health check (`{ status: 'ok', uptime }`) |
-| `/api/standings` | `GET`, `POST` | `server_data/standings.json` + `standings.csv` | `App.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
-| `/api/standings/csv` | `GET` | `server_data/standings.csv` | Direct CSV download |
-| `/api/schedule` | `GET`, `POST` | `server_data/schedule.json` | `App.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
-| `/api/minutes` | `GET`, `POST` | `server_data/minutes.json` | `MeetingMinutes.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
-| `/api/roster` | `GET`, `POST` | `server_data/roster.json` | `App.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
-| `/api/recipes` | `GET`, `POST` | `server_data/recipes.json` | `RecipeVault.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
+| `/api/health` | `GET` | `crabs.db` (`SELECT 1`) | Health check (`{ status: 'ok', storage: 'sqlite', uptime }`) |
+| `/api/standings` | `GET`, `POST` | `standings_months` + `standings_placements` | `App.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
+| `/api/standings/csv` | `GET` | `standings_months` + `standings_placements` | Dynamic RFC-4180 CSV download |
+| `/api/schedule` | `GET`, `POST` | `competition_schedule` | `App.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
+| `/api/minutes` | `GET`, `POST` | `meeting_minutes` | `MeetingMinutes.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
+| `/api/roster` | `GET`, `POST` | `roster` | `App.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
+| `/api/recipes` | `GET`, `POST` | `recipes` | `RecipeVault.tsx`, `OfficerManagement.tsx` (via `api.ts`) |
 
 *(All `POST` endpoints accept either a raw JSON array `[...]` or a wrapped object `{ "<key>": [...] }`.)*
 
@@ -187,6 +187,6 @@ Used as client-side initial/fallback data when `server_data/*.json` is unreachab
 ## 9. Rules for Future Developers & LLMs
 
 1. **Keep `server.ts` Independent of `src/`:** Do not import `.ts` files from `./src/...` inside `server.ts`. Node's native TypeScript execution (`node server.ts`) uses strict ESM resolution and will fail with `ERR_MODULE_NOT_FOUND` on extensionless client TypeScript imports.
-2. **Preserve Flat-File Persistence:** Do not introduce SQL/external databases unless explicitly requested. All shared state changes must call the corresponding `save*ToServer()` helper in `src/services/api.ts`.
+2. **Preserve SQLite Persistence:** All server persistence uses `server_data/crabs.db` via Node's built-in `node:sqlite` (zero native C++ compilation required for Node 22/26 Alpine). All shared state changes must call the corresponding `save*ToServer()` helper in `src/services/api.ts`.
 3. **Verify Before Finishing:** Always run `npm run lint` (`tsc --noEmit`) and `npm run build` (`vite build`), and verify `NODE_ENV=production node server.ts` starts cleanly without module errors.
-4. **Preserve Docker Compatibility:** Always read/write server data strictly inside `server_data/` and keep static brand images in `images/` (both resolved relative to `server.ts`) so Docker runtime images and volume mounts (`-v ./server_data:/app/server_data`) preserve all state and assets.
+4. **Preserve Docker Compatibility:** Always read/write the SQLite database inside `server_data/` and keep static brand images in `images/` (both resolved relative to `server.ts`) so Docker runtime images and volume mounts (`-v ./server_data:/app/server_data`) preserve all state and assets.
