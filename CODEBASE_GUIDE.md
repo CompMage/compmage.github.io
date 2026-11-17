@@ -39,8 +39,8 @@ The application is a **full-stack React + Express + SQLite SPA**.
 | **`package.json`** | Manifest, dependencies, and npm scripts | `"type": "module"`. Scripts: `dev` (`tsx server.ts`), `build` (`vite build`), `start` (`node server.ts`), `lint` (`tsc --noEmit`). Node 22+ / 26+ runs `server.ts` directly via native TypeScript type stripping. |
 | **`package-lock.json`** | Dependency lockfile | Used by `npm ci` for reproducible local and Docker builds. |
 | **`tsconfig.json`** | TypeScript compiler configuration | Targets `ES2022`, `moduleResolution: "bundler"`, `jsx: "react-jsx"`, `noEmit: true`. Excludes `dist`. |
-| **`vite.config.ts`** | Vite bundler configuration | Enables `@vitejs/plugin-react` and `@tailwindcss/vite`, sets `base: './'`, aliases `@` to project root, and configures HMR flag (`DISABLE_HMR`). **Do not mount Express here**—Express runs in `server.ts`. |
-| **`index.html`** | HTML shell & metadata | Loads Google Fonts (`Plus Jakarta Sans`, `JetBrains Mono`), sets club favicon (`/images/crabs_altcolor_caponly_1000_909266e9.png`), and mounts React via `<script type="module" src="/src/main.tsx">`. |
+| **`vite.config.ts`** | Vite bundler configuration | Enables `@vitejs/plugin-react` and `@tailwindcss/vite`, copies root `/images` into `dist/images` on build (`copyRootImagesPlugin`) for static hosts like GitHub Pages, sets `base: './'`, aliases `@` to project root, and configures HMR flag (`DISABLE_HMR`). **Do not mount Express here**—Express runs in `server.ts`. |
+| **`index.html`** | HTML shell & metadata | Loads Google Fonts (`Plus Jakarta Sans`, `JetBrains Mono`), sets club favicon (`./images/crabs_altcolor_caponly_1000_909266e9.png`), and mounts React via `<script type="module" src="/src/main.tsx">`. |
 | **`server.ts`** | Full-stack Express + SQLite backend & SPA host | Opens `server_data/crabs.db` via built-in `node:sqlite`, initializes relational tables (`recipes`, `roster`, `standings_months`, `standings_placements`, `competition_schedule`, `meeting_minutes`, `db_meta`), runs one-time migration from legacy JSON files if present, mounts `/images` static assets, serves REST endpoints (`/api/health`, `/api/standings`, `/api/standings/csv`, `/api/schedule`, `/api/minutes`, `/api/roster`, `/api/recipes`) with `Cache-Control: no-store` and SQLite transactions, and serves either `vite.middlewares` (dev) or `/dist` (prod). **Constraint:** Must remain self-contained (must NOT import client `.ts` files from `src/` so `node server.ts` works natively in ESM without a bundler). |
 | **`.dockerignore`** | Docker build exclusion rules | Excludes `node_modules`, `dist`, `.git`, `.aistudio`, `.env*`, logs, `*.tmp`, and transient SQLite WAL/SHM files from Docker build contexts. |
 
@@ -63,7 +63,7 @@ The application is a **full-stack React + Express + SQLite SPA**.
 
 ## 4. Root Static Images (`/images/`)
 
-> **Serving Note:** Stored off the project root in `/images/` and mounted directly at `/images` in `server.ts` (`express.static` with `maxAge: '1y', immutable: true`) for both development and production. Include `/images` in Docker runtime images alongside `dist/` and `server_data/`.
+> **Serving Note:** Stored off the project root in `/images/`, mounted directly at `/images` in `server.ts` (`express.static` with `maxAge: '1y', immutable: true`) for both dev and prod, and automatically copied into `dist/images/` by `vite.config.ts` during `npm run build` so static deployments (such as GitHub Pages) include the logo assets. Include `/images` in Docker runtime images alongside `dist/` and `server_data/`.
 
 | Path | Purpose | Where Referenced |
 | :--- | :--- | :--- |
